@@ -15,7 +15,13 @@ dist/
 build/
 *.log
 
+# Environment and sensitive files
+.env*
+*.local
+
+# Tool and superpowers artifacts
+.superpowers/
+
 # Temp files
 *.tmp
 /tmp/
-.vercel
