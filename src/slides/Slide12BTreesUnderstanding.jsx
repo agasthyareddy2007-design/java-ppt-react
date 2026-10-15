@@ -6,317 +6,370 @@ export default function Slide12BTreesUnderstanding({ isActive }) {
       <div
         className="slide-content-wrapper"
         style={{
-          padding: '36px 64px 44px 64px',
+          padding: '40px 64px 36px 64px',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
           justifyContent: 'flex-start',
-          gap: '24px'
+          gap: '0'
         }}
       >
         {/* Slide Header */}
-        <div className="slide-header reveal" style={{ margin: 0, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span
-              className="mono"
-              style={{
-                fontSize: '13px',
-                color: 'var(--jvm-cyan)',
-                fontWeight: 800,
-                background: 'rgba(6,182,212,0.15)',
-                border: '1px solid rgba(6,182,212,0.3)',
-                padding: '4px 12px',
-                borderRadius: '6px',
-                letterSpacing: '0.08em'
-              }}
-            >
-              DATA STRUCTURES &amp; INDEXING
-            </span>
-            <span className="mono" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>
-              CORE THEORY &amp; DEGREE t = 2
-            </span>
-          </div>
-          <h2 className="slide-title" style={{ margin: 0, fontSize: '42px' }}>
-            B-Trees: Concept, Degree Rules &amp; Structural Invariants
+        <div className="slide-header reveal" style={{ margin: '0 0 28px 0', flexShrink: 0 }}>
+          <h2 className="slide-title" style={{ margin: 0, fontSize: '44px' }}>
+            B-Trees: How They Work
           </h2>
         </div>
 
-        {/* 2-Column Balanced Master Presentation Grid */}
+        {/* Main Content — Three Sections */}
         <div
           className="reveal delay-1"
           style={{
             flex: 1,
             display: 'grid',
-            gridTemplateColumns: '1.05fr 0.95fr',
-            gap: '28px',
-            minHeight: 0,
-            alignItems: 'stretch'
+            gridTemplateColumns: '1fr 1fr',
+            gridTemplateRows: '1fr 1fr',
+            gap: '24px',
+            minHeight: 0
           }}
         >
-          {/* COLUMN 1: What is a B-Tree + Large Node Diagram + Child Ranges */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%' }}>
-            {/* Box 1: Core Definition & Plain Language Explanation */}
-            <div
-              className="glass-panel"
-              style={{
-                padding: '28px 32px',
-                borderRadius: '20px',
-                background: 'linear-gradient(145deg, rgba(17, 24, 39, 0.75), rgba(11, 17, 29, 0.85))',
-                border: '1px solid rgba(6, 182, 212, 0.25)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '14px'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--jvm-cyan)', boxShadow: '0 0 10px var(--jvm-cyan)' }} />
-                <span className="mono" style={{ fontSize: '13px', color: 'var(--jvm-cyan)', fontWeight: 800, letterSpacing: '0.06em' }}>
-                  01 · WHAT IS A B-TREE?
-                </span>
-              </div>
-
-              <p style={{ fontSize: '17px', color: 'var(--text-main)', lineHeight: '1.65', margin: 0 }}>
-                A <strong>B-Tree</strong> is a self-balancing search tree whose nodes store <strong>multiple sorted keys</strong> and can have <strong>multiple children</strong>. Unlike standard binary search trees that grow deep and tall, a B-Tree grows wide and maintains a remarkably shallow height.
-              </p>
+          {/* ──────────────────────────────────────────────── */}
+          {/* SECTION 1 — What is a B-Tree? (Top Left)        */}
+          {/* ──────────────────────────────────────────────── */}
+          <div
+            className="glass-panel"
+            style={{
+              padding: '28px 36px',
+              borderRadius: '20px',
+              background: 'linear-gradient(145deg, rgba(17, 24, 39, 0.72), rgba(11, 17, 29, 0.82))',
+              border: '1px solid rgba(6, 182, 212, 0.25)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '18px'
+            }}
+          >
+            {/* Section label */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '10px', height: '10px', borderRadius: '50%',
+                background: 'var(--jvm-cyan)',
+                boxShadow: '0 0 12px var(--jvm-cyan)'
+              }} />
+              <span className="mono" style={{
+                fontSize: '13px', color: 'var(--jvm-cyan)',
+                fontWeight: 800, letterSpacing: '0.06em'
+              }}>
+                WHAT IS A B-TREE?
+              </span>
             </div>
 
-            {/* Box 2: Visual Multi-Key Node Anatomy & Child Ranges Diagram */}
-            <div
-              className="glass-panel"
-              style={{
-                flex: 1,
-                padding: '28px 32px',
-                borderRadius: '20px',
-                background: 'linear-gradient(145deg, rgba(15, 23, 42, 0.8), rgba(9, 14, 26, 0.9))',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                gap: '20px'
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span className="mono" style={{ fontSize: '13px', color: 'var(--jvm-amber)', fontWeight: 800, letterSpacing: '0.06em' }}>
-                    NODE ANATOMY &amp; CHILD RANGE PARTITIONING
-                  </span>
-                  <span className="mono" style={{ fontSize: '12px', color: 'var(--text-dim)', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px' }}>
-                    k keys = 3  →  k + 1 children = 4
-                  </span>
-                </div>
-                <p style={{ fontSize: '15px', color: 'var(--text-dim)', lineHeight: 1.5, margin: 0 }}>
-                  Three sorted separator keys partition the entire key-space into four distinct child pointer ranges:
-                </p>
-              </div>
+            {/* Plain-language explanation */}
+            <p style={{
+              fontSize: '18px', color: 'var(--text-main)',
+              lineHeight: '1.7', margin: 0
+            }}>
+              A B-Tree is a search tree that stores <strong>several sorted keys</strong> in
+              each node. Each node can also have <strong>multiple children</strong>. This
+              helps the tree stay short and organized, even when it stores lots of data.
+            </p>
 
-              {/* Large Visual Node with 3 Keys */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', margin: '4px 0' }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    background: '#090e17',
-                    border: '3px solid var(--jvm-cyan)',
-                    borderRadius: '16px',
-                    boxShadow: '0 0 40px rgba(6, 182, 212, 0.35)',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <div style={{ padding: '16px 36px', fontFamily: 'var(--font-mono)', fontSize: '26px', fontWeight: 900, color: '#ffffff' }}>
-                    10
-                  </div>
-                  <div style={{ width: '2px', height: '48px', background: 'rgba(255, 255, 255, 0.25)' }} />
-                  <div style={{ padding: '16px 36px', fontFamily: 'var(--font-mono)', fontSize: '26px', fontWeight: 900, color: '#ffffff' }}>
-                    20
-                  </div>
-                  <div style={{ width: '2px', height: '48px', background: 'rgba(255, 255, 255, 0.25)' }} />
-                  <div style={{ padding: '16px 36px', fontFamily: 'var(--font-mono)', fontSize: '26px', fontWeight: 900, color: '#ffffff' }}>
-                    30
-                  </div>
-                </div>
-
-                {/* 4 Child Range Pointer Boxes */}
-                <div style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-                  <div style={{ background: 'rgba(6, 182, 212, 0.1)', border: '1px solid rgba(6, 182, 212, 0.35)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
-                    <div className="mono" style={{ fontSize: '10px', color: 'var(--jvm-cyan)', fontWeight: 800 }}>CHILD 0</div>
-                    <div className="mono" style={{ fontSize: '15px', color: '#fff', fontWeight: 900, marginTop: '2px' }}>key &lt; 10</div>
-                  </div>
-                  <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.35)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
-                    <div className="mono" style={{ fontSize: '10px', color: 'var(--jvm-emerald)', fontWeight: 800 }}>CHILD 1</div>
-                    <div className="mono" style={{ fontSize: '15px', color: '#fff', fontWeight: 900, marginTop: '2px' }}>10 &lt; key &lt; 20</div>
-                  </div>
-                  <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.35)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
-                    <div className="mono" style={{ fontSize: '10px', color: 'var(--jvm-amber)', fontWeight: 800 }}>CHILD 2</div>
-                    <div className="mono" style={{ fontSize: '15px', color: '#fff', fontWeight: 900, marginTop: '2px' }}>20 &lt; key &lt; 30</div>
-                  </div>
-                  <div style={{ background: 'rgba(168, 85, 247, 0.1)', border: '1px solid rgba(168, 85, 247, 0.35)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
-                    <div className="mono" style={{ fontSize: '10px', color: 'var(--jvm-purple)', fontWeight: 800 }}>CHILD 3</div>
-                    <div className="mono" style={{ fontSize: '15px', color: '#fff', fontWeight: 900, marginTop: '2px' }}>key &gt; 30</div>
-                  </div>
-                </div>
+            {/* Large visual node: [10 | 20 | 30] */}
+            <div style={{
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', gap: '10px'
+            }}>
+              <div
+                style={{
+                  display: 'flex', alignItems: 'center',
+                  background: '#090e17',
+                  border: '3px solid var(--jvm-cyan)',
+                  borderRadius: '16px',
+                  boxShadow: '0 0 32px rgba(6, 182, 212, 0.3)',
+                  overflow: 'hidden'
+                }}
+              >
+                <div style={{
+                  padding: '16px 40px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '28px', fontWeight: 900, color: '#ffffff'
+                }}>10</div>
+                <div style={{
+                  width: '2px', height: '48px',
+                  background: 'rgba(255, 255, 255, 0.25)'
+                }} />
+                <div style={{
+                  padding: '16px 40px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '28px', fontWeight: 900, color: '#ffffff'
+                }}>20</div>
+                <div style={{
+                  width: '2px', height: '48px',
+                  background: 'rgba(255, 255, 255, 0.25)'
+                }} />
+                <div style={{
+                  padding: '16px 40px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '28px', fontWeight: 900, color: '#ffffff'
+                }}>30</div>
               </div>
-
-              {/* Bottom Insight Note */}
-              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '10px', padding: '10px 16px', borderLeft: '3px solid var(--jvm-cyan)' }}>
-                <span style={{ fontSize: '13.5px', color: 'var(--text-dim)', lineHeight: 1.45 }}>
-                  <strong>Key Observation:</strong> A binary tree needs 3 nodes and depth 2 to store 3 keys. A B-Tree stores all 3 in a single contiguous block, eliminating memory pointer hops.
-                </span>
-              </div>
+              <span style={{
+                fontSize: '14px', color: 'var(--text-dim)',
+                fontStyle: 'italic'
+              }}>
+                One node holding three keys — sorted from smallest to largest
+              </span>
             </div>
           </div>
 
-          {/* COLUMN 2: Degree t = 2 Rules + Essential Invariants + Why B-Trees Matter */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%' }}>
-            {/* Box 3: Capacity Rules for Degree t = 2 */}
-            <div
-              className="glass-panel"
-              style={{
-                padding: '24px 28px',
-                borderRadius: '20px',
-                background: 'linear-gradient(145deg, rgba(20, 24, 38, 0.75), rgba(12, 16, 27, 0.85))',
-                border: '1px solid rgba(245, 158, 11, 0.25)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '14px'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--jvm-amber)', boxShadow: '0 0 10px var(--jvm-amber)' }} />
-                  <span className="mono" style={{ fontSize: '13px', color: 'var(--jvm-amber)', fontWeight: 800, letterSpacing: '0.06em' }}>
-                    02 · MINIMUM DEGREE RULES (t = 2)
-                  </span>
+          {/* ──────────────────────────────────────────────── */}
+          {/* SECTION 2 — What does t = 2 mean? (Top Right)   */}
+          {/* ──────────────────────────────────────────────── */}
+          <div
+            className="glass-panel"
+            style={{
+              padding: '28px 36px',
+              borderRadius: '20px',
+              background: 'linear-gradient(145deg, rgba(20, 24, 38, 0.72), rgba(12, 16, 27, 0.82))',
+              border: '1px solid rgba(245, 158, 11, 0.25)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '18px'
+            }}
+          >
+            {/* Section label */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '10px', height: '10px', borderRadius: '50%',
+                background: 'var(--jvm-amber)',
+                boxShadow: '0 0 12px var(--jvm-amber)'
+              }} />
+              <span className="mono" style={{
+                fontSize: '13px', color: 'var(--jvm-amber)',
+                fontWeight: 800, letterSpacing: '0.06em'
+              }}>
+                WHAT DOES t = 2 MEAN?
+              </span>
+            </div>
+
+            {/* Explanation */}
+            <p style={{
+              fontSize: '16px', color: 'var(--text-main)',
+              lineHeight: '1.6', margin: 0
+            }}>
+              <strong style={{ color: 'var(--jvm-amber)' }}>t</strong> is the{' '}
+              <strong>minimum degree</strong>. It controls how many keys and children
+              each node can hold. For <strong>t&nbsp;=&nbsp;2</strong>:
+            </p>
+
+            {/* Four prominent rules */}
+            <div style={{
+              display: 'grid', gridTemplateColumns: '1fr 1fr',
+              gap: '12px', flex: 1
+            }}>
+              {/* Rule 1 */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                padding: '16px 20px', borderRadius: '14px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                display: 'flex', flexDirection: 'column',
+                justifyContent: 'center', gap: '4px'
+              }}>
+                <span className="mono" style={{
+                  color: 'var(--text-dim)', fontSize: '11px',
+                  fontWeight: 700, letterSpacing: '0.04em'
+                }}>MAX KEYS PER NODE</span>
+                <div className="mono" style={{
+                  fontSize: '24px', color: '#ffffff', fontWeight: 900
+                }}>
+                  2 × 2 − 1 = <span style={{ color: 'var(--jvm-rose)' }}>3</span>
                 </div>
-                <span className="mono" style={{ fontSize: '12px', color: 'var(--jvm-amber)', background: 'rgba(245,158,11,0.15)', padding: '2px 8px', borderRadius: '4px' }}>
-                  2-3-4 Tree Equivalent
-                </span>
               </div>
 
-              {/* 4 Large Formula Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                  <span className="mono" style={{ color: 'var(--text-dim)', fontSize: '11px', fontWeight: 700 }}>MAX KEYS / NODE</span>
-                  <div className="mono" style={{ fontSize: '20px', color: '#ffffff', fontWeight: 900, marginTop: '2px' }}>
-                    2t − 1 = <span style={{ color: 'var(--jvm-rose)' }}>3 keys</span>
-                  </div>
-                </div>
-
-                <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                  <span className="mono" style={{ color: 'var(--text-dim)', fontSize: '11px', fontWeight: 700 }}>MIN KEYS (NON-ROOT)</span>
-                  <div className="mono" style={{ fontSize: '20px', color: '#ffffff', fontWeight: 900, marginTop: '2px' }}>
-                    t − 1 = <span style={{ color: 'var(--jvm-cyan)' }}>1 key</span>
-                  </div>
-                </div>
-
-                <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                  <span className="mono" style={{ color: 'var(--text-dim)', fontSize: '11px', fontWeight: 700 }}>MAX CHILDREN / NODE</span>
-                  <div className="mono" style={{ fontSize: '20px', color: '#ffffff', fontWeight: 900, marginTop: '2px' }}>
-                    2t = <span style={{ color: 'var(--jvm-amber)' }}>4 children</span>
-                  </div>
-                </div>
-
-                <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                  <span className="mono" style={{ color: 'var(--text-dim)', fontSize: '11px', fontWeight: 700 }}>MIN CHILDREN (INTERNAL)</span>
-                  <div className="mono" style={{ fontSize: '20px', color: '#ffffff', fontWeight: 900, marginTop: '2px' }}>
-                    t = <span style={{ color: 'var(--jvm-emerald)' }}>2 children</span>
-                  </div>
+              {/* Rule 2 */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                padding: '16px 20px', borderRadius: '14px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                display: 'flex', flexDirection: 'column',
+                justifyContent: 'center', gap: '4px'
+              }}>
+                <span className="mono" style={{
+                  color: 'var(--text-dim)', fontSize: '11px',
+                  fontWeight: 700, letterSpacing: '0.04em'
+                }}>MIN KEYS (NON-ROOT)</span>
+                <div className="mono" style={{
+                  fontSize: '24px', color: '#ffffff', fontWeight: 900
+                }}>
+                  2 − 1 = <span style={{ color: 'var(--jvm-cyan)' }}>1</span>
                 </div>
               </div>
 
-              <div style={{ fontSize: '13px', color: 'var(--text-dim)', lineHeight: 1.4, margin: '2px 0 0 0' }}>
-                <strong style={{ color: '#fff' }}>Root Special Rule:</strong> The root is exempt from the minimum keys rule. It may have as few as 1 key (and 2 children), or 0 keys if the entire tree is empty.
+              {/* Rule 3 */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                padding: '16px 20px', borderRadius: '14px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                display: 'flex', flexDirection: 'column',
+                justifyContent: 'center', gap: '4px'
+              }}>
+                <span className="mono" style={{
+                  color: 'var(--text-dim)', fontSize: '11px',
+                  fontWeight: 700, letterSpacing: '0.04em'
+                }}>MAX CHILDREN</span>
+                <div className="mono" style={{
+                  fontSize: '24px', color: '#ffffff', fontWeight: 900
+                }}>
+                  2 × 2 = <span style={{ color: 'var(--jvm-amber)' }}>4</span>
+                </div>
+              </div>
+
+              {/* Rule 4 */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                padding: '16px 20px', borderRadius: '14px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                display: 'flex', flexDirection: 'column',
+                justifyContent: 'center', gap: '4px'
+              }}>
+                <span className="mono" style={{
+                  color: 'var(--text-dim)', fontSize: '11px',
+                  fontWeight: 700, letterSpacing: '0.04em'
+                }}>MIN CHILDREN (NON-ROOT)</span>
+                <div className="mono" style={{
+                  fontSize: '24px', color: '#ffffff', fontWeight: 900
+                }}>
+                  t = <span style={{ color: 'var(--jvm-emerald)' }}>2</span>
+                </div>
               </div>
             </div>
 
-            {/* Box 4: Essential Invariants & Systems Applications */}
-            <div
-              className="glass-panel"
-              style={{
-                flex: 1,
-                padding: '24px 28px',
-                borderRadius: '20px',
-                background: 'linear-gradient(145deg, rgba(16, 24, 38, 0.75), rgba(10, 15, 26, 0.85))',
-                border: '1px solid rgba(16, 185, 129, 0.25)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                gap: '14px'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--jvm-emerald)', boxShadow: '0 0 10px var(--jvm-emerald)' }} />
-                <span className="mono" style={{ fontSize: '13px', color: 'var(--jvm-emerald)', fontWeight: 800, letterSpacing: '0.06em' }}>
-                  03 · ESSENTIAL PROPERTIES &amp; REAL-WORLD USAGE
-                </span>
+            {/* Root special note */}
+            <div style={{
+              fontSize: '14px', color: 'var(--text-dim)',
+              lineHeight: 1.5, marginTop: '2px'
+            }}>
+              <strong style={{ color: '#fff' }}>Root exception:</strong> The root
+              does not need the same minimum. It can hold as few as 1 key, or 0 if the
+              tree is empty.
+            </div>
+          </div>
+
+          {/* ──────────────────────────────────────────────── */}
+          {/* SECTION 3 — Why B-Trees Matter (Full Bottom)    */}
+          {/* ──────────────────────────────────────────────── */}
+          <div
+            className="glass-panel reveal delay-2"
+            style={{
+              gridColumn: '1 / -1',
+              padding: '28px 40px',
+              borderRadius: '20px',
+              background: 'linear-gradient(145deg, rgba(16, 24, 38, 0.72), rgba(10, 15, 26, 0.82))',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '18px'
+            }}
+          >
+            {/* Section label */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '10px', height: '10px', borderRadius: '50%',
+                background: 'var(--jvm-emerald)',
+                boxShadow: '0 0 12px var(--jvm-emerald)'
+              }} />
+              <span className="mono" style={{
+                fontSize: '13px', color: 'var(--jvm-emerald)',
+                fontWeight: 800, letterSpacing: '0.06em'
+              }}>
+                WHY B-TREES MATTER
+              </span>
+            </div>
+
+            {/* Three properties in a row */}
+            <div style={{
+              display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+              gap: '20px'
+            }}>
+              {/* Property 1 — Sorted Keys */}
+              <div style={{
+                background: 'rgba(16, 185, 129, 0.06)',
+                border: '1px solid rgba(16, 185, 129, 0.2)',
+                borderRadius: '14px', padding: '22px 24px',
+                display: 'flex', flexDirection: 'column', gap: '8px'
+              }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '10px'
+                }}>
+                  <span style={{
+                    color: 'var(--jvm-emerald)', fontWeight: 900,
+                    fontSize: '20px', lineHeight: 1
+                  }}>✓</span>
+                  <strong style={{ fontSize: '17px', color: '#fff' }}>
+                    Keys are always sorted
+                  </strong>
+                </div>
+                <p style={{
+                  fontSize: '15px', color: 'var(--text-dim)',
+                  lineHeight: 1.55, margin: 0
+                }}>
+                  Every node keeps its keys in order from smallest to largest. This
+                  makes searching fast — you always know which child to follow.
+                </p>
               </div>
 
-              {/* Invariants Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                  <span style={{ color: 'var(--jvm-emerald)', fontWeight: 900, fontSize: '14px' }}>✓</span>
-                  <div style={{ fontSize: '13.5px', color: 'var(--text-main)', lineHeight: 1.4 }}>
-                    <strong>Keys Sorted:</strong> Keys within each node are always in strictly ascending order.
-                  </div>
+              {/* Property 2 — Balanced */}
+              <div style={{
+                background: 'rgba(16, 185, 129, 0.06)',
+                border: '1px solid rgba(16, 185, 129, 0.2)',
+                borderRadius: '14px', padding: '22px 24px',
+                display: 'flex', flexDirection: 'column', gap: '8px'
+              }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '10px'
+                }}>
+                  <span style={{
+                    color: 'var(--jvm-emerald)', fontWeight: 900,
+                    fontSize: '20px', lineHeight: 1
+                  }}>✓</span>
+                  <strong style={{ fontSize: '17px', color: '#fff' }}>
+                    The tree stays balanced
+                  </strong>
                 </div>
-
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                  <span style={{ color: 'var(--jvm-emerald)', fontWeight: 900, fontSize: '14px' }}>✓</span>
-                  <div style={{ fontSize: '13.5px', color: 'var(--text-main)', lineHeight: 1.4 }}>
-                    <strong>k + 1 Children:</strong> An internal node with k keys always has exactly k + 1 children.
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                  <span style={{ color: 'var(--jvm-emerald)', fontWeight: 900, fontSize: '14px' }}>✓</span>
-                  <div style={{ fontSize: '13.5px', color: 'var(--text-main)', lineHeight: 1.4 }}>
-                    <strong>Uniform Depth:</strong> Every leaf node resides at the exact same depth (perfect balance).
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                  <span style={{ color: 'var(--jvm-emerald)', fontWeight: 900, fontSize: '14px' }}>✓</span>
-                  <div style={{ fontSize: '13.5px', color: 'var(--text-main)', lineHeight: 1.4 }}>
-                    <strong>Self-Balancing:</strong> Overflow splits upward; underflow borrows or merges siblings.
-                  </div>
-                </div>
+                <p style={{
+                  fontSize: '15px', color: 'var(--text-dim)',
+                  lineHeight: 1.55, margin: 0
+                }}>
+                  Every leaf lives at the same depth. When a node overflows, it splits
+                  upward. When it underflows, it borrows or merges with a sibling.
+                </p>
               </div>
 
-              {/* Real World Applications Card */}
-              <div
-                style={{
-                  background: 'rgba(16, 185, 129, 0.08)',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                  borderRadius: '12px',
-                  padding: '12px 18px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '16px'
-                }}
-              >
-                <div>
-                  <div className="mono" style={{ fontSize: '11px', color: 'var(--jvm-emerald)', fontWeight: 900, letterSpacing: '0.06em' }}>
-                    WHY B-TREES MATTER IN PRODUCTION SYSTEMS
-                  </div>
-                  <div style={{ fontSize: '13.5px', color: 'var(--text-main)', marginTop: '3px', lineHeight: 1.4 }}>
-                    <strong>Databases:</strong> MySQL InnoDB, PostgreSQL, SQLite B+Trees · <strong>File Systems:</strong> XFS, Btrfs, NTFS, APFS
-                  </div>
+              {/* Property 3 — Real-world usage */}
+              <div style={{
+                background: 'rgba(16, 185, 129, 0.06)',
+                border: '1px solid rgba(16, 185, 129, 0.2)',
+                borderRadius: '14px', padding: '22px 24px',
+                display: 'flex', flexDirection: 'column', gap: '8px'
+              }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '10px'
+                }}>
+                  <span style={{
+                    color: 'var(--jvm-emerald)', fontWeight: 900,
+                    fontSize: '20px', lineHeight: 1
+                  }}>✓</span>
+                  <strong style={{ fontSize: '17px', color: '#fff' }}>
+                    Used everywhere
+                  </strong>
                 </div>
-
-                <div
-                  className="mono"
-                  style={{
-                    background: 'rgba(16, 185, 129, 0.2)',
-                    color: 'var(--jvm-emerald)',
-                    padding: '6px 12px',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    fontWeight: 800,
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  O(log_t N) Disk I/O
-                </div>
+                <p style={{
+                  fontSize: '15px', color: 'var(--text-dim)',
+                  lineHeight: 1.55, margin: 0
+                }}>
+                  Databases like MySQL, PostgreSQL, and SQLite use B-Trees for
+                  indexing. File systems such as NTFS, Btrfs, and APFS rely on them too.
+                </p>
               </div>
             </div>
           </div>
