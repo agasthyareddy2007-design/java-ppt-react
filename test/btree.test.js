@@ -157,3 +157,75 @@ test('B-Tree (t = 2): Deletion Cases (Direct, Borrowing, Merging)', () => {
   assert.deepEqual(d3.children[1].name.keys, ['12', '20'], 'Merged child')
   validateBTreeInvariants(d3, true, 2)
 })
+
+test('B-Tree (t = 2): Slide 14 Searching and Deletion Sequence Invariants', () => {
+  // 1. Initial State (Slide 13 final tree)
+  const state0 = {
+    name: { id: 3, keys: ['10', '20'] },
+    children: [
+      { name: { id: 1, keys: ['5', '6', '7'] } },
+      { name: { id: 2, keys: ['12', '17'] } },
+      { name: { id: 4, keys: ['30'] } }
+    ]
+  }
+  validateBTreeInvariants(state0, true, 2)
+
+  // 2. Case A: Direct Leaf Removal of 6
+  const stateAfter6 = {
+    name: { id: 3, keys: ['10', '20'] },
+    children: [
+      { name: { id: 1, keys: ['5', '7'] } },
+      { name: { id: 2, keys: ['12', '17'] } },
+      { name: { id: 4, keys: ['30'] } }
+    ]
+  }
+  validateBTreeInvariants(stateAfter6, true, 2)
+
+  // 3. Case C: Sibling Borrowing (Remove 30)
+  const stateAfterBorrow30 = {
+    name: { id: 3, keys: ['10', '17'] },
+    children: [
+      { name: { id: 1, keys: ['5', '7'] } },
+      { name: { id: 2, keys: ['12'] } },
+      { name: { id: 4, keys: ['20'] } }
+    ]
+  }
+  validateBTreeInvariants(stateAfterBorrow30, true, 2)
+
+  // 4. Case B Stage 2: After Predecessor 7 removed from left child
+  const stateCaseBStage2 = {
+    name: { id: 3, keys: ['7', '17'] },
+    children: [
+      { name: { id: 1, keys: ['5'] } },
+      { name: { id: 2, keys: ['12'] } },
+      { name: { id: 4, keys: ['20'] } }
+    ]
+  }
+  validateBTreeInvariants(stateCaseBStage2, true, 2)
+
+  // 5. Case D: Merge nodes (Remove 20, pull down 17)
+  const stateAfterMerge = {
+    name: { id: 3, keys: ['7'] },
+    children: [
+      { name: { id: 1, keys: ['5'] } },
+      { name: { id: 2, keys: ['12', '17'] } }
+    ]
+  }
+  validateBTreeInvariants(stateAfterMerge, true, 2)
+
+  // 6. Case E: Root Collapse scenario
+  const statePreCollapse = {
+    name: { id: 3, keys: ['7'] },
+    children: [
+      { name: { id: 1, keys: ['5'] } },
+      { name: { id: 2, keys: ['12'] } }
+    ]
+  }
+  validateBTreeInvariants(statePreCollapse, true, 2)
+
+  const statePostCollapse = {
+    name: { id: 2, keys: ['7', '12'] }
+  }
+  validateBTreeInvariants(statePostCollapse, true, 2)
+})
+
