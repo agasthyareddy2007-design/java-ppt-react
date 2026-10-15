@@ -197,7 +197,7 @@ export default function Slide12BTreesUnderstanding({ isActive }) {
                 <span className="mono" style={{
                   color: 'var(--text-dim)', fontSize: '11px',
                   fontWeight: 700, letterSpacing: '0.04em'
-                }}>MIN KEYS (NON-ROOT)</span>
+                }}>MIN KEYS IN NON-ROOT NODE</span>
                 <div className="mono" style={{
                   fontSize: '24px', color: '#ffffff', fontWeight: 900
                 }}>
@@ -216,7 +216,7 @@ export default function Slide12BTreesUnderstanding({ isActive }) {
                 <span className="mono" style={{
                   color: 'var(--text-dim)', fontSize: '11px',
                   fontWeight: 700, letterSpacing: '0.04em'
-                }}>MAX CHILDREN</span>
+                }}>MAX CHILDREN PER INTERNAL NODE</span>
                 <div className="mono" style={{
                   fontSize: '24px', color: '#ffffff', fontWeight: 900
                 }}>
@@ -235,7 +235,7 @@ export default function Slide12BTreesUnderstanding({ isActive }) {
                 <span className="mono" style={{
                   color: 'var(--text-dim)', fontSize: '11px',
                   fontWeight: 700, letterSpacing: '0.04em'
-                }}>MIN CHILDREN (NON-ROOT)</span>
+                }}>MIN CHILDREN IN NON-ROOT INTERNAL NODE</span>
                 <div className="mono" style={{
                   fontSize: '24px', color: '#ffffff', fontWeight: 900
                 }}>
