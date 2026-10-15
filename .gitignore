@@ -25,3 +25,4 @@ build/
 # Temp files
 *.tmp
 /tmp/
+.vercel
