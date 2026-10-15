@@ -9,7 +9,9 @@ export default function BTreeEngineVisualizer({
   nodeData,
   highlightData = { nodes: {}, edges: {} },
   width = 1760,
-  height = 800
+  height = 800,
+  centered = false,
+  large = false
 }) {
   if (!nodeData || !nodeData.name || !nodeData.name.keys || nodeData.name.keys.length === 0) {
     return (
@@ -47,8 +49,12 @@ export default function BTreeEngineVisualizer({
   const totalLevels = levels.length
 
   // Calculate vertical positions:
-  // Root level at y ~ 140px, Level 1 at y ~ 380px, Level 2 at y ~ 620px
   const getYForDepth = (depth) => {
+    if (large) {
+      if (totalLevels === 1) return Math.round(height * 0.46)
+      if (totalLevels === 2) return depth === 0 ? Math.round(height * 0.25) : Math.round(height * 0.70)
+      return Math.round(height * 0.16 + depth * (height * 0.35))
+    }
     if (totalLevels === 1) return height * 0.45
     if (totalLevels === 2) return depth === 0 ? 160 : 480
     return 130 + depth * 230
@@ -64,17 +70,32 @@ export default function BTreeEngineVisualizer({
 
     // Center nodes horizontally
     let positions = []
-    if (count === 1) {
-      positions = [width * 0.52] // slightly right to balance overlay on left
-    } else if (count === 2) {
-      positions = [width * 0.38, width * 0.66]
-    } else if (count === 3) {
-      positions = [width * 0.30, width * 0.52, width * 0.74]
+    if (centered) {
+      if (count === 1) {
+        positions = [width * 0.50]
+      } else if (count === 2) {
+        positions = [width * 0.35, width * 0.65]
+      } else if (count === 3) {
+        positions = [width * 0.22, width * 0.50, width * 0.78]
+      } else {
+        const margin = width * 0.12
+        const available = width - margin * 2
+        const step = available / (count - 1 || 1)
+        positions = lvlNodes.map((_, i) => margin + i * step)
+      }
     } else {
-      const margin = width * 0.18
-      const available = width - margin * 2
-      const step = available / (count - 1 || 1)
-      positions = lvlNodes.map((_, i) => margin + i * step)
+      if (count === 1) {
+        positions = [width * 0.52] // slightly right to balance overlay on left
+      } else if (count === 2) {
+        positions = [width * 0.38, width * 0.66]
+      } else if (count === 3) {
+        positions = [width * 0.30, width * 0.52, width * 0.74]
+      } else {
+        const margin = width * 0.18
+        const available = width - margin * 2
+        const step = available / (count - 1 || 1)
+        positions = lvlNodes.map((_, i) => margin + i * step)
+      }
     }
 
     lvlNodes.forEach((n, idx) => {
@@ -95,9 +116,9 @@ export default function BTreeEngineVisualizer({
         if (childCoord && parentCoord) {
           edges.push({
             x1: parentCoord.x,
-            y1: parentCoord.y + 30,
+            y1: parentCoord.y + (large ? 38 : 30),
             x2: childCoord.x,
-            y2: childCoord.y - 32,
+            y2: childCoord.y - (large ? 40 : 32),
             fromId: String(node.name.id),
             toId: String(child.name.id)
           })
@@ -258,14 +279,14 @@ export default function BTreeEngineVisualizer({
               <div
                 style={{
                   position: 'absolute',
-                  top: '-36px',
+                  top: large ? '-40px' : '-36px',
                   whiteSpace: 'nowrap',
                   background: style.badgeBg,
                   color: style.badgeText,
                   fontWeight: 900,
-                  fontSize: '11px',
+                  fontSize: large ? '12px' : '11px',
                   fontFamily: 'var(--font-mono)',
-                  padding: '4px 12px',
+                  padding: large ? '5px 14px' : '4px 12px',
                   borderRadius: '6px',
                   boxShadow: '0 4px 18px rgba(0,0,0,0.85)',
                   letterSpacing: '0.08em',
@@ -283,8 +304,8 @@ export default function BTreeEngineVisualizer({
                 display: 'flex',
                 alignItems: 'center',
                 background: style.bgColor,
-                border: `2.5px solid ${style.borderColor}`,
-                borderRadius: '14px',
+                border: `${large ? 3 : 2.5}px solid ${style.borderColor}`,
+                borderRadius: large ? '16px' : '14px',
                 boxShadow: style.glow,
                 backdropFilter: 'blur(16px)',
                 overflow: 'hidden',
@@ -298,13 +319,13 @@ export default function BTreeEngineVisualizer({
                   <React.Fragment key={kIdx}>
                     <div
                       style={{
-                        padding: '14px 28px',
+                        padding: large ? '16px 32px' : '14px 28px',
                         fontFamily: 'var(--font-mono)',
-                        fontSize: '22px',
+                        fontSize: large ? '26px' : '22px',
                         fontWeight: 900,
                         color: isKeyHigh ? 'var(--jvm-amber)' : '#ffffff',
                         background: isKeyHigh ? 'rgba(245, 158, 11, 0.35)' : 'transparent',
-                        minWidth: '50px',
+                        minWidth: large ? '58px' : '50px',
                         textAlign: 'center',
                         transition: 'all 0.3s ease',
                         boxShadow: isKeyHigh ? 'inset 0 0 14px rgba(245, 158, 11, 0.4)' : 'none'
@@ -316,7 +337,7 @@ export default function BTreeEngineVisualizer({
                       <div
                         style={{
                           width: '2px',
-                          height: '42px',
+                          height: large ? '48px' : '42px',
                           background: 'rgba(255, 255, 255, 0.25)'
                         }}
                       />
@@ -330,8 +351,8 @@ export default function BTreeEngineVisualizer({
             <div
               className="mono"
               style={{
-                marginTop: '6px',
-                fontSize: '10px',
+                marginTop: large ? '8px' : '6px',
+                fontSize: large ? '11px' : '10px',
                 color: keys.length === 3 ? 'var(--jvm-rose)' : 'var(--text-dim)',
                 fontWeight: 700,
                 letterSpacing: '0.04em'
