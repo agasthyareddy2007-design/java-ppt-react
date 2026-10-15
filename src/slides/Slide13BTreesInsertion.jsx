@@ -1,29 +1,92 @@
 import React, { useMemo } from 'react'
-import BTree from '../btree-engine/BTree.js'
 import BTreeEngineVisualizer from '../btree-engine/BTreeEngineVisualizer.jsx'
 import { useBTreeAnimator, PHASES } from '../btree-engine/useBTreeAnimator.js'
 
 export default function Slide13BTreesInsertion({ isActive }) {
-  // Build step definitions with verified before/after trees, highlights, and timings
+  // Build 10 discrete steps enforcing top-down B-Tree invariants:
+  // Split operations and subsequent insertions are strictly separate steps.
   const steps = useMemo(() => {
-    const keys = [10, 20, 5, 6, 12, 30, 7, 17]
+    const state0 = { name: { id: 0, keys: [] } }
+    const state1 = { name: { id: 1, keys: ['10'] } }
+    const state2 = { name: { id: 1, keys: ['10', '20'] } }
+    const state3 = { name: { id: 1, keys: ['5', '10', '20'] } }
 
-    // Precompute exact BTree states
-    const states = []
-    for (let i = 0; i <= keys.length; i++) {
-      const tree = new BTree(3)
-      for (let j = 0; j < i; j++) tree.add(keys[j])
-      states.push(tree.toNodeData())
+    // Split 1 intermediate state: Root [10], children [5] and [20]
+    // Distinct step BEFORE key 6 is inserted!
+    const stateSplitRoot = {
+      name: { id: 3, keys: ['10'] },
+      children: [
+        { name: { id: 1, keys: ['5'] } },
+        { name: { id: 2, keys: ['20'] } }
+      ]
+    }
+
+    // After key 6 is inserted into left child [5] -> [5, 6]
+    const stateAfter6 = {
+      name: { id: 3, keys: ['10'] },
+      children: [
+        { name: { id: 1, keys: ['5', '6'] } },
+        { name: { id: 2, keys: ['20'] } }
+      ]
+    }
+
+    // After key 12 is inserted into right child [20] -> [12, 20]
+    const stateAfter12 = {
+      name: { id: 3, keys: ['10'] },
+      children: [
+        { name: { id: 1, keys: ['5', '6'] } },
+        { name: { id: 2, keys: ['12', '20'] } }
+      ]
+    }
+
+    // After key 30 is inserted into right child [12, 20] -> [12, 20, 30]
+    const stateAfter30 = {
+      name: { id: 3, keys: ['10'] },
+      children: [
+        { name: { id: 1, keys: ['5', '6'] } },
+        { name: { id: 2, keys: ['12', '20', '30'] } }
+      ]
+    }
+
+    // After key 7 is inserted into left child [5, 6] -> [5, 6, 7]
+    const stateAfter7 = {
+      name: { id: 3, keys: ['10'] },
+      children: [
+        { name: { id: 1, keys: ['5', '6', '7'] } },
+        { name: { id: 2, keys: ['12', '20', '30'] } }
+      ]
+    }
+
+    // Split 2 intermediate state: Root [10, 20], children [5, 6, 7], [12], [30]
+    // Distinct step BEFORE key 17 is inserted!
+    const stateSplitLeaf = {
+      name: { id: 3, keys: ['10', '20'] },
+      children: [
+        { name: { id: 1, keys: ['5', '6', '7'] } },
+        { name: { id: 2, keys: ['12'] } },
+        { name: { id: 4, keys: ['30'] } }
+      ]
+    }
+
+    // Final state: After key 17 is inserted into middle child [12] -> [12, 17]
+    const stateAfter17 = {
+      name: { id: 3, keys: ['10', '20'] },
+      children: [
+        { name: { id: 1, keys: ['5', '6', '7'] } },
+        { name: { id: 2, keys: ['12', '17'] } },
+        { name: { id: 4, keys: ['30'] } }
+      ]
     }
 
     return [
+      // ════ STEP 1: INSERT 10 ════
       {
-        key: 10,
+        id: 'insert-10',
         name: 'Insert 10 — First Key',
         durations: { explain: 5000, execute: 3000, result: 4000 },
         isSplit: false,
-        treeBefore: states[0],
-        treeAfter: states[1],
+        treeBefore: state0,
+        treeAfter: state1,
         explainTitle: 'INSERT 10 — FIRST KEY',
         explainText: 'The tree is empty. Key 10 becomes the first entry in a brand-new root node.',
         executeTitle: 'CREATING ROOT NODE',
@@ -43,13 +106,15 @@ export default function Slide13BTreesInsertion({ isActive }) {
           edges: {}
         }
       },
+
+      // ════ STEP 2: INSERT 20 ════
       {
-        key: 20,
+        id: 'insert-20',
         name: 'Insert 20 — Sorted Order',
         durations: { explain: 5000, execute: 3000, result: 4000 },
         isSplit: false,
-        treeBefore: states[1],
-        treeAfter: states[2],
+        treeBefore: state1,
+        treeAfter: state2,
         explainTitle: 'INSERT 20 — SORTED ORDER',
         explainText: 'Key 20 is greater than 10, so it goes after 10 in the root. Keys within a node are always kept sorted.',
         executeTitle: 'APPENDING KEY IN ROOT',
@@ -72,19 +137,21 @@ export default function Slide13BTreesInsertion({ isActive }) {
           edges: {}
         }
       },
+
+      // ════ STEP 3: INSERT 5 ════
       {
-        key: 5,
+        id: 'insert-5',
         name: 'Insert 5 — Root Fills Up',
         durations: { explain: 5000, execute: 3000, result: 5000 },
         isSplit: false,
-        treeBefore: states[2],
-        treeAfter: states[3],
+        treeBefore: state2,
+        treeAfter: state3,
         explainTitle: 'INSERT 5 — ROOT FILLS UP',
-        explainText: 'Key 5 is smaller than 10, so it goes at the front of the root in sorted position. This will bring the root to its maximum capacity of 3 keys.',
+        explainText: 'Key 5 is smaller than 10, so it goes at the front of the root in sorted position. This brings the root to its maximum capacity of 3 keys.',
         executeTitle: 'SHIFTING AND INSERTING AT INDEX 0',
         executeText: 'Key 5 < 10: shifting existing keys right to make room and placing 5 at index 0.',
         resultTitle: 'ROOT IS NOW FULL',
-        resultText: 'The root holds [5 | 10 | 20] — all 3 slots are occupied. The next insertion will force a split!',
+        resultText: 'The root holds [5 | 10 | 20] — all 3 slots are occupied. The next insertion will require a split!',
         statusExplain: { type: 'cyan', label: 'COMPARING KEYS' },
         statusExecute: { type: 'amber', label: 'PLACING AT FRONT' },
         statusResult: { type: 'red', label: 'NODE FULL — 3/3 KEYS' },
@@ -101,22 +168,24 @@ export default function Slide13BTreesInsertion({ isActive }) {
           edges: {}
         }
       },
+
+      // ════ STEP 4: SPLIT ROOT (BEFORE INSERTING 6) ════
       {
-        key: 6,
-        name: 'Insert 6 — Root Split & Promotion',
-        durations: { explain: 6500, execute: 5000, result: 5000 },
+        id: 'split-root',
+        name: 'Split Root — Promote Median 10',
+        durations: { explain: 6500, execute: 5000, result: 6000 },
         isSplit: true,
-        treeBefore: states[3],
-        treeAfter: states[4],
-        explainTitle: 'INSERT 6 — THE ROOT IS FULL',
-        explainText: 'The root contains [5 | 10 | 20], which is already at its three-key limit. Before descending, we must split the root.',
-        executeTitle: 'SPLIT AND PROMOTE',
-        executeText: 'Promote median key 10 to become the new root. The remaining keys form two children: [5] and [20], and 6 is inserted into the left child.',
-        resultTitle: 'INSERT 6 INTO THE LEFT CHILD',
-        resultText: 'The left child has room. Key 6 was inserted in sorted order to produce [5 | 6]. Key 10 is the new root. Tree height is now 2.',
+        treeBefore: state3,
+        treeAfter: stateSplitRoot,
+        explainTitle: 'SPLIT REQUIRED — THE ROOT IS FULL',
+        explainText: 'The root already contains three keys [5 | 10 | 20], the maximum for t = 2. We must split it before descending to insert 6.',
+        executeTitle: 'SPLIT ROOT — PROMOTE 10',
+        executeText: 'Promote the middle key, 10, to become the new root. The remaining keys become two children: [5] and [20].',
+        resultTitle: 'ROOT SPLIT COMPLETE — TWO CHILDREN CREATED',
+        resultText: 'The tree now has two children: [5] and [20]. Since 6 is less than 10, we will descend into the left child next.',
         statusExplain: { type: 'red', label: 'NODE FULL — SPLIT REQUIRED' },
-        statusExecute: { type: 'amber', label: 'SPLIT & PROMOTE' },
-        statusResult: { type: 'purple', label: 'STRUCTURAL UPDATE COMPLETE' },
+        statusExecute: { type: 'amber', label: 'SPLIT ROOT — PROMOTE 10' },
+        statusResult: { type: 'purple', label: 'SPLIT COMPLETE — 2 CHILDREN' },
         highlightBefore: {
           nodes: { 1: { statusType: 'red', nodeMessage: 'OVERFLOW: SPLIT REQUIRED', fullHighlight: true } },
           edges: {}
@@ -124,7 +193,7 @@ export default function Slide13BTreesInsertion({ isActive }) {
         highlightExecute: {
           nodes: {
             3: { statusType: 'amber', nodeMessage: 'PROMOTING MEDIAN 10', fullHighlight: true },
-            1: { statusType: 'purple', nodeMessage: 'LEFT [5, 6]' },
+            1: { statusType: 'purple', nodeMessage: 'LEFT [5]' },
             2: { statusType: 'purple', nodeMessage: 'RIGHT [20]' }
           },
           edges: { '3-1': true, '3-2': true }
@@ -132,23 +201,65 @@ export default function Slide13BTreesInsertion({ isActive }) {
         highlightResult: {
           nodes: {
             3: { statusType: 'purple', nodeMessage: 'NEW ROOT [10]', fullHighlight: true },
-            1: { statusType: 'green', nodeMessage: 'LEFT CHILD [5, 6]' },
-            2: { statusType: 'green', nodeMessage: 'RIGHT CHILD [20]' }
+            1: { statusType: 'cyan', nodeMessage: 'TARGET: LEFT [5]' },
+            2: { statusType: 'green', nodeMessage: 'RIGHT [20]' }
           },
           edges: { '3-1': true, '3-2': true }
         }
       },
+
+      // ════ STEP 5: INSERT 6 INTO LEFT CHILD ════
       {
-        key: 12,
+        id: 'insert-6',
+        name: 'Insert 6 — Left Child',
+        durations: { explain: 5000, execute: 3000, result: 4500 },
+        isSplit: false,
+        treeBefore: stateSplitRoot,
+        treeAfter: stateAfter6,
+        explainTitle: 'ROUTE 6 INTO LEFT CHILD',
+        explainText: 'The left child contains [5] and has space for another key (1 out of 3 keys). Since 6 < 10, insert 6 here in sorted order.',
+        executeTitle: 'INSERT 6 IN SORTED ORDER',
+        executeText: 'The left child has space for another key. Insert 6 in sorted order to produce [5 | 6].',
+        resultTitle: 'KEY 6 INSERTED',
+        resultText: 'The root remains [10], with left child [5 | 6] and right child [20]. Both children are valid leaves with available capacity.',
+        statusExplain: { type: 'green', label: 'LEFT CHILD HAS ROOM' },
+        statusExecute: { type: 'green', label: 'INSERTING 6' },
+        statusResult: { type: 'green', label: 'INSERTED [5 | 6]' },
+        highlightBefore: {
+          nodes: {
+            3: { statusType: 'cyan', nodeMessage: 'COMPARE: 6 < 10' },
+            1: { statusType: 'green', nodeMessage: 'LEFT CHILD HAS ROOM', fullHighlight: true }
+          },
+          edges: { '3-1': true }
+        },
+        highlightExecute: {
+          nodes: {
+            1: { statusType: 'green', nodeMessage: 'INSERTING 6', fullHighlight: true, indexHighlights: [1] }
+          },
+          edges: { '3-1': true }
+        },
+        highlightResult: {
+          nodes: {
+            3: { statusType: 'green', nodeMessage: 'ROOT [10]' },
+            1: { statusType: 'green', nodeMessage: 'LEFT [5, 6]', fullHighlight: true },
+            2: { statusType: 'green', nodeMessage: 'RIGHT [20]' }
+          },
+          edges: { '3-1': true, '3-2': true }
+        }
+      },
+
+      // ════ STEP 6: INSERT 12 ════
+      {
+        id: 'insert-12',
         name: 'Insert 12 — Route Right',
         durations: { explain: 5000, execute: 3000, result: 4000 },
         isSplit: false,
-        treeBefore: states[4],
-        treeAfter: states[5],
+        treeBefore: stateAfter6,
+        treeAfter: stateAfter12,
         explainTitle: 'INSERT 12 — ROUTE RIGHT',
-        explainText: 'Compare 12 with root key 10. Since 12 > 10, we follow the right child pointer to the node containing [20]. Insert 12 before 20 in sorted order.',
-        executeTitle: 'ROUTING RIGHT CHILD',
-        executeText: 'Following pointer to right child [20]. Placing 12 in sorted order at index 0.',
+        explainText: 'Compare 12 with root key 10. Since 12 > 10, follow the right child pointer to node [20]. Insert 12 before 20 in sorted order.',
+        executeTitle: 'INSERTING 12 INTO RIGHT LEAF',
+        executeText: 'Right child [20] has room. Placing 12 before 20 in sorted order to produce [12 | 20].',
         resultTitle: 'INSERTED INTO RIGHT CHILD',
         resultText: 'The right child now holds [12 | 20]. It has 2 out of 3 keys — still within capacity.',
         statusExplain: { type: 'cyan', label: 'SEARCHING — 12 > 10' },
@@ -171,20 +282,22 @@ export default function Slide13BTreesInsertion({ isActive }) {
           nodes: {
             2: { statusType: 'green', nodeMessage: 'RIGHT [12, 20]', fullHighlight: true }
           },
-          edges: {}
+          edges: { '3-2': true }
         }
       },
+
+      // ════ STEP 7: INSERT 30 ════
       {
-        key: 30,
+        id: 'insert-30',
         name: 'Insert 30 — Right Child Fills',
         durations: { explain: 5000, execute: 3000, result: 5000 },
         isSplit: false,
-        treeBefore: states[5],
-        treeAfter: states[6],
+        treeBefore: stateAfter12,
+        treeAfter: stateAfter30,
         explainTitle: 'INSERT 30 — RIGHT CHILD FILLS UP',
-        explainText: 'Key 30 > 10, so we route right. The right child [12 | 20] has room. Insert 30 after 20 in sorted order. This fills the right child to capacity.',
-        executeTitle: 'INSERTING AT END OF RIGHT CHILD',
-        executeText: 'Appending 30 after 20 in the right child. All 3 slots in this leaf node are now filled.',
+        explainText: 'Key 30 > 10, so route right. The right child [12 | 20] has room. Insert 30 after 20 in sorted order. This fills the right child to capacity.',
+        executeTitle: 'APPENDING 30 IN RIGHT LEAF',
+        executeText: 'Appending 30 after 20 in the right leaf [12 | 20 | 30]. All 3 slots in this leaf node are now full.',
         resultTitle: 'RIGHT CHILD IS NOW FULL',
         resultText: 'The right child holds [12 | 20 | 30] — all 3 slots full. The next key routed here will force another split.',
         statusExplain: { type: 'cyan', label: 'SEARCHING — 30 > 10' },
@@ -207,22 +320,24 @@ export default function Slide13BTreesInsertion({ isActive }) {
           nodes: {
             2: { statusType: 'red', nodeMessage: 'RIGHT CHILD FULL (3/3)', fullHighlight: true }
           },
-          edges: {}
+          edges: { '3-2': true }
         }
       },
+
+      // ════ STEP 8: INSERT 7 ════
       {
-        key: 7,
+        id: 'insert-7',
         name: 'Insert 7 — Route Left',
         durations: { explain: 5000, execute: 3000, result: 5000 },
         isSplit: false,
-        treeBefore: states[6],
-        treeAfter: states[7],
+        treeBefore: stateAfter30,
+        treeAfter: stateAfter7,
         explainTitle: 'INSERT 7 — ROUTE LEFT',
-        explainText: 'Key 7 < 10, so we follow the left child pointer. The left child [5 | 6] has room. Insert 7 after 6 in sorted order. This fills the left child to capacity too.',
-        executeTitle: 'INSERTING INTO LEFT LEAF',
-        executeText: 'Appending 7 after 6 in the left leaf [5 | 6 | 7]. Both leaf nodes are now at max capacity.',
+        explainText: 'Key 7 < 10, so follow the left child pointer. The left child [5 | 6] has room. Insert 7 after 6 in sorted order. This fills the left child to capacity too.',
+        executeTitle: 'INSERTING 7 INTO LEFT LEAF',
+        executeText: 'Appending 7 after 6 in the left leaf [5 | 6 | 7]. Both leaf nodes in the tree are now at maximum capacity.',
         resultTitle: 'LEFT CHILD IS NOW FULL',
-        resultText: 'The left child holds [5 | 6 | 7] — all 3 slots full. Both leaf nodes are now at maximum capacity!',
+        resultText: 'The left child holds [5 | 6 | 7] — all 3 slots full. Both leaf nodes in the tree are now completely full!',
         statusExplain: { type: 'cyan', label: 'SEARCHING — 7 < 10' },
         statusExecute: { type: 'cyan', label: 'INSERTING INTO LEAF' },
         statusResult: { type: 'red', label: 'BOTH LEAVES FULL' },
@@ -243,28 +358,30 @@ export default function Slide13BTreesInsertion({ isActive }) {
           nodes: {
             1: { statusType: 'red', nodeMessage: 'LEFT CHILD FULL (3/3)', fullHighlight: true }
           },
-          edges: {}
+          edges: { '3-1': true }
         }
       },
+
+      // ════ STEP 9: SPLIT RIGHT CHILD (BEFORE INSERTING 17) ════
       {
-        key: 17,
-        name: 'Insert 17 — Leaf Split & Promotion',
-        durations: { explain: 7000, execute: 5000, result: 12000, finalResult: 12000 },
+        id: 'split-leaf',
+        name: 'Split Right Child — Promote 20',
+        durations: { explain: 6500, execute: 5000, result: 6000 },
         isSplit: true,
-        treeBefore: states[7],
-        treeAfter: states[8],
-        explainTitle: 'INSERT 17 — LEAF SPLIT REQUIRED',
-        explainText: 'Key 17 > 10, so we route to the right child [12 | 20 | 30]. But that leaf is already full! It must split: median key 20 is promoted up to the root, creating two new children: [12 | 17] and [30].',
+        treeBefore: stateAfter7,
+        treeAfter: stateSplitLeaf,
+        explainTitle: 'SPLIT REQUIRED — RIGHT CHILD IS FULL',
+        explainText: 'Key 17 > 10, so we route to the right child [12 | 20 | 30]. But that child already contains 3 keys (the maximum for t = 2). It must be split before 17 can be inserted.',
         executeTitle: 'SPLIT LEAF & PROMOTE MEDIAN 20',
-        executeText: 'Promoting 20 into the root to form [10 | 20]. The leaf splits into [12 | 17] and [30]. All 3 children are now linked.',
-        resultTitle: 'FINAL TREE — ALL 8 KEYS INSERTED',
-        resultText: 'Root is [10 | 20] with three children: [5 | 6 | 7], [12 | 17], and [30]. Every node satisfies the B-Tree rules. Perfect balance at depth 2!',
+        executeText: 'Split [12 | 20 | 30]: promote median key 20 up into the root to form [10 | 20]. The remaining keys form two leaves: [12] and [30].',
+        resultTitle: 'LEAF SPLIT COMPLETE — THREE CHILDREN CREATED',
+        resultText: 'The root now holds [10 | 20] with three children: [5 | 6 | 7], [12], and [30]. Since 10 < 17 < 20, key 17 belongs in the middle child [12].',
         statusExplain: { type: 'red', label: 'NODE FULL — SPLIT REQUIRED' },
-        statusExecute: { type: 'amber', label: 'SPLIT & PROMOTE' },
-        statusResult: { type: 'green', label: 'CONSTRUCTION COMPLETE ✓' },
+        statusExecute: { type: 'amber', label: 'SPLIT LEAF — PROMOTE 20' },
+        statusResult: { type: 'purple', label: 'SPLIT COMPLETE — 3 CHILDREN' },
         highlightBefore: {
           nodes: {
-            3: { statusType: 'cyan', nodeMessage: 'ROOT: 17 > 10' },
+            3: { statusType: 'cyan', nodeMessage: 'COMPARE: 17 > 10' },
             2: { statusType: 'red', nodeMessage: 'OVERFLOW: SPLIT REQUIRED', fullHighlight: true }
           },
           edges: { '3-2': true }
@@ -272,10 +389,51 @@ export default function Slide13BTreesInsertion({ isActive }) {
         highlightExecute: {
           nodes: {
             3: { statusType: 'amber', nodeMessage: 'PROMOTING 20 TO ROOT', fullHighlight: true },
-            2: { statusType: 'purple', nodeMessage: 'LEFT [12, 17]' },
+            2: { statusType: 'purple', nodeMessage: 'LEFT [12]' },
             4: { statusType: 'purple', nodeMessage: 'RIGHT [30]' }
           },
           edges: { '3-2': true, '3-4': true }
+        },
+        highlightResult: {
+          nodes: {
+            3: { statusType: 'green', nodeMessage: 'ROOT [10, 20]', fullHighlight: true },
+            1: { statusType: 'green', nodeMessage: '[5, 6, 7]' },
+            2: { statusType: 'cyan', nodeMessage: 'TARGET: [12]' },
+            4: { statusType: 'green', nodeMessage: '[30]' }
+          },
+          edges: { '3-1': true, '3-2': true, '3-4': true }
+        }
+      },
+
+      // ════ STEP 10: INSERT 17 INTO MIDDLE CHILD ════
+      {
+        id: 'insert-17',
+        name: 'Insert 17 — Middle Child',
+        durations: { explain: 5000, execute: 3000, result: 12000, finalResult: 12000 },
+        isSplit: false,
+        treeBefore: stateSplitLeaf,
+        treeAfter: stateAfter17,
+        explainTitle: 'ROUTE 17 INTO MIDDLE CHILD',
+        explainText: 'Compare 17 with root [10 | 20]: since 10 < 17 < 20, route down to the middle child. The middle child contains [12] and has room for another key.',
+        executeTitle: 'INSERT 17 IN SORTED ORDER',
+        executeText: 'The middle child contains [12] and has room. Insert 17 after 12 to produce [12 | 17].',
+        resultTitle: 'FINAL B-TREE — ALL 8 KEYS INSERTED',
+        resultText: 'Root is [10 | 20] with three children: [5 | 6 | 7], [12 | 17], and [30]. Every node satisfies the B-Tree invariants. Perfectly balanced at depth 2!',
+        statusExplain: { type: 'green', label: 'MIDDLE CHILD HAS ROOM' },
+        statusExecute: { type: 'green', label: 'INSERTING 17' },
+        statusResult: { type: 'green', label: 'CONSTRUCTION COMPLETE ✓' },
+        highlightBefore: {
+          nodes: {
+            3: { statusType: 'cyan', nodeMessage: '10 < 17 < 20' },
+            2: { statusType: 'green', nodeMessage: 'MIDDLE CHILD HAS ROOM', fullHighlight: true }
+          },
+          edges: { '3-2': true }
+        },
+        highlightExecute: {
+          nodes: {
+            2: { statusType: 'green', nodeMessage: 'INSERTING 17', fullHighlight: true, indexHighlights: [1] }
+          },
+          edges: { '3-2': true }
         },
         highlightResult: {
           nodes: {
@@ -380,6 +538,8 @@ export default function Slide13BTreesInsertion({ isActive }) {
             <span>Degree <strong style={{ color: '#fff' }}>t = 2</strong></span>
             <span style={{ color: 'rgba(255,255,255,0.15)' }}>|</span>
             <span>Keys: <strong style={{ color: 'var(--jvm-cyan)' }}>10, 20, 5, 6, 12, 30, 7, 17</strong></span>
+            <span style={{ color: 'rgba(255,255,255,0.15)' }}>|</span>
+            <span>Splits: <strong style={{ color: 'var(--jvm-amber)' }}>2 Proactive Splits</strong></span>
           </div>
         </div>
 
@@ -435,13 +595,13 @@ export default function Slide13BTreesInsertion({ isActive }) {
             style={{
               display: 'grid',
               gridTemplateColumns: 'auto 1fr auto',
-              gap: '20px',
+              gap: '24px',
               alignItems: 'center',
-              background: 'linear-gradient(145deg, rgba(11, 16, 28, 0.9), rgba(8, 12, 22, 0.95))',
+              background: 'linear-gradient(145deg, rgba(11, 16, 28, 0.92), rgba(8, 12, 22, 0.98))',
               borderRadius: '16px',
-              border: `1px solid ${sc.border}`,
-              padding: '20px 28px',
-              boxShadow: `0 8px 30px rgba(0,0,0,0.5), 0 0 20px ${sc.bg}`,
+              border: `1.5px solid ${sc.border}`,
+              padding: '20px 32px',
+              boxShadow: `0 8px 32px rgba(0,0,0,0.6), 0 0 25px ${sc.bg}`,
               transition: 'border-color 0.4s ease, box-shadow 0.4s ease',
               minHeight: '120px'
             }}
@@ -531,17 +691,17 @@ export default function Slide13BTreesInsertion({ isActive }) {
               alignItems: 'center'
             }}>
               {steps.map((_, idx) => {
-                const isActive = idx === stepIndex
+                const isCurrentActive = idx === stepIndex
                 const isPast = idx < stepIndex
                 return (
                   <div
                     key={idx}
                     style={{
-                      width: isActive ? '10px' : '6px',
-                      height: isActive ? '10px' : '6px',
+                      width: isCurrentActive ? '10px' : '6px',
+                      height: isCurrentActive ? '10px' : '6px',
                       borderRadius: '50%',
-                      background: isActive ? sc.color : isPast ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.12)',
-                      boxShadow: isActive ? `0 0 8px ${sc.color}` : 'none',
+                      background: isCurrentActive ? sc.color : isPast ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.12)',
+                      boxShadow: isCurrentActive ? `0 0 8px ${sc.color}` : 'none',
                       transition: 'all 0.3s ease'
                     }}
                   />
