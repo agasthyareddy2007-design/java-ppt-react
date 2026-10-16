@@ -6,7 +6,6 @@ import Slide01Title from './slides/Slide01Title.jsx'
 import Slide02Features from './slides/Slide02Features.jsx'
 import Slide03HowJavaRuns from './slides/Slide03HowJavaRuns.jsx'
 import Slide04Architecture from './slides/Slide04Architecture.jsx'
-import Slide05Overview from './slides/Slide05Overview.jsx'
 import Slide06ClassLoader from './slides/Slide06ClassLoader.jsx'
 import Slide07MemoryComponents from './slides/Slide07MemoryComponents.jsx'
 import Slide08JITCompiler from './slides/Slide08JITCompiler.jsx'
@@ -14,12 +13,11 @@ import Slide09GarbageCollection from './slides/Slide09GarbageCollection.jsx'
 import Slide10PlatformIndependence from './slides/Slide10PlatformIndependence.jsx'
 import Slide11LiveJVMExecution from './slides/Slide11LiveJVMExecution.jsx'
 import Slide12BTreesUnderstanding from './slides/Slide12BTreesUnderstanding.jsx'
-import Slide13BTreesInsertion from './slides/Slide13BTreesInsertion.jsx'
-import Slide14BTreesDeletion from './slides/Slide14BTreesDeletion.jsx'
+import Slide13BTreePlayground from './slides/Slide13BTreePlayground.jsx'
 import Slide15ThankYou from './slides/Slide15ThankYou.jsx'
 
 export default function App() {
-  const totalSlides = 15
+  const totalSlides = 13
   const stageRef = useRef(null)
   const activeAnimationRef = useRef(null)
 
@@ -61,10 +59,9 @@ export default function App() {
     }
   }, [])
 
-  // Stable per-slide registration helpers for manual slides (11, 13, 14)
-  const regSlide11 = useCallback((handlers) => registerAnimation(10, handlers), [registerAnimation])
-  const regSlide13 = useCallback((handlers) => registerAnimation(12, handlers), [registerAnimation])
-  const regSlide14 = useCallback((handlers) => registerAnimation(13, handlers), [registerAnimation])
+  // Stable per-slide registration helpers for manual slides (11, 13)
+  const regSlide11 = useCallback((handlers) => registerAnimation(9, handlers), [registerAnimation])
+  const regSlide13 = useCallback((handlers) => registerAnimation(11, handlers), [registerAnimation])
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -211,26 +208,21 @@ export default function App() {
         <Slide02Features isActive={currentSlide === 1} />
         <Slide03HowJavaRuns isActive={currentSlide === 2} />
         <Slide04Architecture isActive={currentSlide === 3} />
-        <Slide05Overview isActive={currentSlide === 4} />
-        <Slide06ClassLoader isActive={currentSlide === 5} />
-        <Slide07MemoryComponents isActive={currentSlide === 6} />
-        <Slide08JITCompiler isActive={currentSlide === 7} />
-        <Slide09GarbageCollection isActive={currentSlide === 8} />
-        <Slide10PlatformIndependence isActive={currentSlide === 9} />
+        <Slide06ClassLoader isActive={currentSlide === 4} />
+        <Slide07MemoryComponents isActive={currentSlide === 5} />
+        <Slide08JITCompiler isActive={currentSlide === 6} />
+        <Slide09GarbageCollection isActive={currentSlide === 7} />
+        <Slide10PlatformIndependence isActive={currentSlide === 8} />
         <Slide11LiveJVMExecution
-          isActive={currentSlide === 10}
+          isActive={currentSlide === 9}
           onRegisterAnimation={regSlide11}
         />
-        <Slide12BTreesUnderstanding isActive={currentSlide === 11} />
-        <Slide13BTreesInsertion
-          isActive={currentSlide === 12}
+        <Slide12BTreesUnderstanding isActive={currentSlide === 10} />
+        <Slide13BTreePlayground
+          isActive={currentSlide === 11}
           onRegisterAnimation={regSlide13}
         />
-        <Slide14BTreesDeletion
-          isActive={currentSlide === 13}
-          onRegisterAnimation={regSlide14}
-        />
-        <Slide15ThankYou isActive={currentSlide === 14} />
+        <Slide15ThankYou isActive={currentSlide === 12} />
       </div>
     </div>
   )

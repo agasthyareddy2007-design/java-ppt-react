@@ -11,7 +11,9 @@ export default function BTreeEngineVisualizer({
   width = 1760,
   height = 800,
   centered = false,
-  large = false
+  large = false,
+  degree = 2,
+  fastTransition = false
 }) {
   if (!nodeData || !nodeData.name || !nodeData.name.keys || nodeData.name.keys.length === 0) {
     return (
@@ -230,7 +232,7 @@ export default function BTreeEngineVisualizer({
               stroke={isEdgeHigh ? 'var(--jvm-cyan)' : 'rgba(255, 255, 255, 0.22)'}
               strokeWidth={isEdgeHigh ? 4 : 2}
               filter={isEdgeHigh ? 'url(#glow-curve)' : 'none'}
-              style={{ transition: 'all 0.4s ease' }}
+              style={{ transition: fastTransition ? 'all 0.08s ease' : 'all 0.4s ease' }}
             />
           )
         })}
@@ -271,7 +273,7 @@ export default function BTreeEngineVisualizer({
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+              transition: fastTransition ? 'all 0.08s ease' : 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           >
             {/* Status Message Badge Above Node */}
@@ -310,7 +312,7 @@ export default function BTreeEngineVisualizer({
                 backdropFilter: 'blur(16px)',
                 overflow: 'hidden',
                 padding: '2px',
-                transition: 'all 0.4s ease'
+                transition: fastTransition ? 'all 0.08s ease' : 'all 0.4s ease'
               }}
             >
               {keys.map((k, kIdx) => {
@@ -327,7 +329,7 @@ export default function BTreeEngineVisualizer({
                         background: isKeyHigh ? 'rgba(245, 158, 11, 0.35)' : 'transparent',
                         minWidth: large ? '58px' : '50px',
                         textAlign: 'center',
-                        transition: 'all 0.3s ease',
+                        transition: fastTransition ? 'all 0.06s ease' : 'all 0.3s ease',
                         boxShadow: isKeyHigh ? 'inset 0 0 14px rgba(245, 158, 11, 0.4)' : 'none'
                       }}
                     >
@@ -348,18 +350,24 @@ export default function BTreeEngineVisualizer({
             </div>
 
             {/* Capacity Indicator below node (shows occupancy e.g. "3 / 3 keys [FULL]") */}
-            <div
-              className="mono"
-              style={{
-                marginTop: large ? '8px' : '6px',
-                fontSize: large ? '11px' : '10px',
-                color: keys.length === 3 ? 'var(--jvm-rose)' : 'var(--text-dim)',
-                fontWeight: 700,
-                letterSpacing: '0.04em'
-              }}
-            >
-              {keys.length} / 3 keys {keys.length === 3 ? '· FULL' : ''}
-            </div>
+            {(() => {
+              const maxNodeKeys = 2 * degree - 1
+              const isFull = keys.length >= maxNodeKeys
+              return (
+                <div
+                  className="mono"
+                  style={{
+                    marginTop: large ? '8px' : '6px',
+                    fontSize: large ? '11px' : '10px',
+                    color: isFull ? 'var(--jvm-rose)' : 'var(--text-dim)',
+                    fontWeight: 700,
+                    letterSpacing: '0.04em'
+                  }}
+                >
+                  {keys.length} / {maxNodeKeys} keys {isFull ? '· FULL' : ''}
+                </div>
+              )
+            })()}
           </div>
         )
       })}
