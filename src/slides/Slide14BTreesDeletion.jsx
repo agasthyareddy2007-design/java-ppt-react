@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react'
 import BTreeEngineVisualizer from '../btree-engine/BTreeEngineVisualizer.jsx'
 import { useBTreeAnimator, PHASES } from '../btree-engine/useBTreeAnimator.js'
+import AnimationKeyboardHint from '../components/AnimationKeyboardHint.jsx'
 
-export default function Slide14BTreesDeletion({ isActive }) {
+export default function Slide14BTreesDeletion({ isActive, onRegisterAnimation }) {
   // Precompute verified B-Tree states enforcing degree t = 2 invariants
   const steps = useMemo(() => {
     // ════════════ TREE STATES ════════════
@@ -462,8 +463,8 @@ export default function Slide14BTreesDeletion({ isActive }) {
     ]
   }, [])
 
-  // Hook into deterministic controller
-  const { stepIndex, phase } = useBTreeAnimator(steps, isActive)
+  // Hook into deterministic controller with manual stepping
+  const { stepIndex, phase, hasStarted } = useBTreeAnimator(steps, isActive, onRegisterAnimation)
   const currentStep = steps[stepIndex] || steps[0]
 
   // Crucial Rule: Tree MUST remain unchanged during EXPLAIN phase!
@@ -513,7 +514,7 @@ export default function Slide14BTreesDeletion({ isActive }) {
       <div
         className="slide-content-wrapper"
         style={{
-          padding: '32px 56px 28px 56px',
+          padding: '24px 56px 16px 56px',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
@@ -723,6 +724,11 @@ export default function Slide14BTreesDeletion({ isActive }) {
               })}
             </div>
           </div>
+        </div>
+
+        {/* ─── BOTTOM KEYBOARD HINT ─── */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+          <AnimationKeyboardHint hasStarted={hasStarted} />
         </div>
       </div>
     </section>

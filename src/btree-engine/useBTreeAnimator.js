@@ -4,10 +4,10 @@ import { BTreeAnimationController, PHASES } from './animationController.js'
 export { PHASES }
 
 /**
- * Custom React hook for driving deterministic B-Tree animations.
+ * Custom React hook for driving deterministic B-Tree animations with manual keyboard stepping.
  * Completely immune to StrictMode double-rendering, stale closures, and race conditions.
  */
-export function useBTreeAnimator(steps, isActive) {
+export function useBTreeAnimator(steps, isActive, onRegisterAnimation = null) {
   const getInitialStep = () => {
     try {
       const params = new URLSearchParams(window.location.search)
@@ -37,6 +37,8 @@ export function useBTreeAnimator(steps, isActive) {
       phase: initPhase,
       isPaused: false,
       isActive: !!isActive,
+      hasStarted: false,
+      isTransitioning: false,
       currentStep: steps[initIdx] || steps[0] || null
     }
   })
@@ -46,6 +48,7 @@ export function useBTreeAnimator(steps, isActive) {
   // Initialize or update controller when steps change
   if (!controllerRef.current) {
     controllerRef.current = new BTreeAnimationController(steps, {
+      autoAdvance: false,
       onStateChange: (newState) => {
         setAnimState({ ...newState })
       }
@@ -72,11 +75,31 @@ export function useBTreeAnimator(steps, isActive) {
     }
   }, [isActive])
 
+  // Register animation handlers with App keyboard manager when active
+  useEffect(() => {
+    if (isActive && onRegisterAnimation && controllerRef.current) {
+      const controller = controllerRef.current
+      const unregister = onRegisterAnimation({
+        next: () => controller.next(),
+        prev: () => controller.prev(),
+        restart: () => controller.restart(),
+        togglePause: () => controller.togglePause()
+      })
+      return () => {
+        if (typeof unregister === 'function') unregister()
+      }
+    }
+  }, [isActive, onRegisterAnimation])
+
   return {
     stepIndex: animState.stepIndex,
     phase: animState.phase,
     isPaused: animState.isPaused,
+    hasStarted: animState.hasStarted,
+    isTransitioning: animState.isTransitioning,
     currentStep: animState.currentStep || steps[animState.stepIndex],
+    next: () => controllerRef.current?.next(),
+    prev: () => controllerRef.current?.prev(),
     restart: () => controllerRef.current?.restart(),
     togglePause: () => controllerRef.current?.togglePause(),
     nextStep: () => controllerRef.current?.nextStep(),

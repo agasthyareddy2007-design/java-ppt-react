@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react'
 import BTreeEngineVisualizer from '../btree-engine/BTreeEngineVisualizer.jsx'
 import { useBTreeAnimator, PHASES } from '../btree-engine/useBTreeAnimator.js'
+import AnimationKeyboardHint from '../components/AnimationKeyboardHint.jsx'
 
-export default function Slide13BTreesInsertion({ isActive }) {
+export default function Slide13BTreesInsertion({ isActive, onRegisterAnimation }) {
   // Build 10 discrete steps enforcing top-down B-Tree invariants:
   // Split operations and subsequent insertions are strictly separate steps.
   const steps = useMemo(() => {
@@ -448,7 +449,7 @@ export default function Slide13BTreesInsertion({ isActive }) {
     ]
   }, [])
 
-  const { stepIndex, phase } = useBTreeAnimator(steps, isActive)
+  const { stepIndex, phase, hasStarted } = useBTreeAnimator(steps, isActive, onRegisterAnimation)
   const currentStep = steps[stepIndex]
 
   // Tree state: unchanged during EXPLAIN, mutated during EXECUTE/RESULT
@@ -499,7 +500,7 @@ export default function Slide13BTreesInsertion({ isActive }) {
       <div
         className="slide-content-wrapper"
         style={{
-          padding: '32px 56px 28px 56px',
+          padding: '24px 56px 16px 56px',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
@@ -709,6 +710,11 @@ export default function Slide13BTreesInsertion({ isActive }) {
               })}
             </div>
           </div>
+        </div>
+
+        {/* ─── BOTTOM KEYBOARD HINT ─── */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+          <AnimationKeyboardHint hasStarted={hasStarted} />
         </div>
       </div>
     </section>

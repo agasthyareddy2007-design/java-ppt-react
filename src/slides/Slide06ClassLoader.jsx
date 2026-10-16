@@ -1,26 +1,57 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import gsap from 'gsap'
+import AnimationKeyboardHint from '../components/AnimationKeyboardHint.jsx'
 
-export default function Slide06ClassLoader({ isActive }) {
+export default function Slide06ClassLoader({ isActive, onRegisterAnimation }) {
   const [activeLinkStep, setActiveLinkStep] = useState(0)
+  const [hasStarted, setHasStarted] = useState(false)
+
+  // Step forward (ENTER)
+  const stepForward = useCallback(() => {
+    setHasStarted(true)
+    setActiveLinkStep((prev) => (prev + 1) % 3)
+  }, [])
+
+  // Step backward (BACKSPACE)
+  const stepBackward = useCallback(() => {
+    setActiveLinkStep((prev) => (prev - 1 + 3) % 3)
+  }, [])
+
+  // Restart (R)
+  const restart = useCallback(() => {
+    setActiveLinkStep(0)
+    setHasStarted(false)
+  }, [])
 
   useEffect(() => {
-    if (!isActive) return
+    if (!isActive) {
+      setActiveLinkStep(0)
+      setHasStarted(false)
+      return
+    }
+
     const pAnim = (id) => gsap.fromTo(id, {y: -15, opacity: 0}, {y: 15, opacity: 1, duration: 0.6, ease: "power1.in", yoyo: true, repeat: -1, repeatDelay: 0.2})
     pAnim('#p6-1')
     const t2 = gsap.delayedCall(0.3, () => pAnim('#p6-2'))
     const t3 = gsap.delayedCall(0.6, () => pAnim('#p6-3'))
 
-    const interval = setInterval(() => {
-      setActiveLinkStep(prev => (prev + 1) % 3)
-    }, 1500)
-
     return () => {
       t2.kill(); t3.kill()
-      clearInterval(interval)
       gsap.killTweensOf('.packet')
     }
   }, [isActive])
+
+  // Register animation controls with App authoritative keyboard handler
+  useEffect(() => {
+    if (isActive && onRegisterAnimation) {
+      return onRegisterAnimation({
+        next: stepForward,
+        prev: stepBackward,
+        restart: restart,
+        togglePause: () => {}
+      })
+    }
+  }, [isActive, onRegisterAnimation, stepForward, stepBackward, restart])
 
   return (
     <section className={`slide ${isActive ? 'active' : ''}`}>
@@ -74,6 +105,14 @@ export default function Slide06ClassLoader({ isActive }) {
             </div>
           </div>
 
+        </div>
+
+        {/* ─── BOTTOM KEYBOARD HINT ─── */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+          <AnimationKeyboardHint
+            hasStarted={hasStarted}
+            customNote={hasStarted ? `Linking: ${['Verification', 'Preparation', 'Resolution'][activeLinkStep]}` : null}
+          />
         </div>
       </div>
     </section>

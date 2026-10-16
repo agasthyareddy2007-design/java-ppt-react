@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import AmbientBackground from './components/AmbientBackground.jsx'
 import Chrome from './components/Chrome.jsx'
 
@@ -21,6 +21,7 @@ import Slide15ThankYou from './slides/Slide15ThankYou.jsx'
 export default function App() {
   const totalSlides = 15
   const stageRef = useRef(null)
+  const activeAnimationRef = useRef(null)
 
   const getInitialSlide = () => {
     try {
@@ -40,6 +41,21 @@ export default function App() {
   }
 
   const [currentSlide, setCurrentSlide] = useState(getInitialSlide)
+
+  // Clear active animation controller on slide transition
+  useEffect(() => {
+    activeAnimationRef.current = null
+  }, [currentSlide])
+
+  // Registration callback passed to active animated slides
+  const registerAnimation = useCallback((handlers) => {
+    activeAnimationRef.current = handlers
+    return () => {
+      if (activeAnimationRef.current === handlers) {
+        activeAnimationRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -82,27 +98,87 @@ export default function App() {
     return () => window.removeEventListener('resize', updateScale)
   }, [])
 
-  // Keyboard navigation & Fullscreen toggle (F key)
+  // Authoritative Keyboard Navigation Listener
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+      // 1. Ignore shortcuts when typing inside form fields or editable elements
+      const target = e.target
+      const tagName = target && target.tagName ? target.tagName.toLowerCase() : ''
+      const isEditable = target && (target.isContentEditable || ['input', 'textarea', 'select'].includes(tagName))
+      if (isEditable) return
+
+      // 2. Prevent key repeat from skipping animation steps
+      if (e.repeat && ['Enter', 'Backspace', 'r', 'R', 'p', 'P'].includes(e.key)) {
         e.preventDefault()
+        return
+      }
+
+      // 3. Slide navigation — unchanged keys
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault() // Prevents Space from scrolling the page
         setCurrentSlide((prev) => Math.min(totalSlides - 1, prev + 1))
-      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        return
+      }
+
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
         e.preventDefault()
         setCurrentSlide((prev) => Math.max(0, prev - 1))
-      } else if (e.key === 'f' || e.key === 'F') {
+        return
+      }
+
+      if (e.key === 'f' || e.key === 'F') {
         if (!document.fullscreenElement) {
           document.documentElement.requestFullscreen().catch(() => {})
         } else {
           document.exitFullscreen().catch(() => {})
         }
+        return
+      }
+
+      if (e.key === 'Escape') {
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {})
+        }
+        return
+      }
+
+      // 4. Animation navigation — strictly separate keys
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        if (activeAnimationRef.current && typeof activeAnimationRef.current.next === 'function') {
+          activeAnimationRef.current.next()
+        }
+        return
+      }
+
+      if (e.key === 'Backspace') {
+        e.preventDefault() // Prevents browser back navigation!
+        if (activeAnimationRef.current && typeof activeAnimationRef.current.prev === 'function') {
+          activeAnimationRef.current.prev()
+        }
+        return
+      }
+
+      if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault()
+        if (activeAnimationRef.current && typeof activeAnimationRef.current.restart === 'function') {
+          activeAnimationRef.current.restart()
+        }
+        return
+      }
+
+      if (e.key === 'p' || e.key === 'P') {
+        e.preventDefault()
+        if (activeAnimationRef.current && typeof activeAnimationRef.current.togglePause === 'function') {
+          activeAnimationRef.current.togglePause()
+        }
+        return
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  }, [totalSlides])
 
   const handleNext = () => setCurrentSlide((prev) => Math.min(totalSlides - 1, prev + 1))
   const handlePrev = () => setCurrentSlide((prev) => Math.max(0, prev - 1))
@@ -118,15 +194,30 @@ export default function App() {
         <Slide03HowJavaRuns isActive={currentSlide === 2} />
         <Slide04Architecture isActive={currentSlide === 3} />
         <Slide05Overview isActive={currentSlide === 4} />
-        <Slide06ClassLoader isActive={currentSlide === 5} />
+        <Slide06ClassLoader
+          isActive={currentSlide === 5}
+          onRegisterAnimation={currentSlide === 5 ? registerAnimation : undefined}
+        />
         <Slide07MemoryComponents isActive={currentSlide === 6} />
         <Slide08JITCompiler isActive={currentSlide === 7} />
-        <Slide09GarbageCollection isActive={currentSlide === 8} />
+        <Slide09GarbageCollection
+          isActive={currentSlide === 8}
+          onRegisterAnimation={currentSlide === 8 ? registerAnimation : undefined}
+        />
         <Slide10PlatformIndependence isActive={currentSlide === 9} />
-        <Slide11LiveJVMExecution isActive={currentSlide === 10} />
+        <Slide11LiveJVMExecution
+          isActive={currentSlide === 10}
+          onRegisterAnimation={currentSlide === 10 ? registerAnimation : undefined}
+        />
         <Slide12BTreesUnderstanding isActive={currentSlide === 11} />
-        <Slide13BTreesInsertion isActive={currentSlide === 12} />
-        <Slide14BTreesDeletion isActive={currentSlide === 13} />
+        <Slide13BTreesInsertion
+          isActive={currentSlide === 12}
+          onRegisterAnimation={currentSlide === 12 ? registerAnimation : undefined}
+        />
+        <Slide14BTreesDeletion
+          isActive={currentSlide === 13}
+          onRegisterAnimation={currentSlide === 13 ? registerAnimation : undefined}
+        />
         <Slide15ThankYou isActive={currentSlide === 14} />
       </div>
     </div>
