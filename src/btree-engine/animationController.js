@@ -165,7 +165,7 @@ export class BTreeAnimationController {
    * - During transition: ignores keypresses to prevent skipping.
    */
   next() {
-    if (!this.isActive) return;
+    this.isActive = true;
     if (this.isTransitioning) return; // Prevent skipping during transition
 
     this.hasStarted = true;
@@ -205,7 +205,7 @@ export class BTreeAnimationController {
    * - If in EXPLAIN: moves back to previous step EXPLAIN.
    */
   prev() {
-    if (!this.isActive) return;
+    this.isActive = true;
 
     if (this.isTransitioning) {
       this.clearTimer();

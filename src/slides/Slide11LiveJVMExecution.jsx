@@ -514,7 +514,7 @@ export default function Slide11LiveJVMExecution({ isActive, onRegisterAnimation 
 
   // Manual step forward (ENTER)
   const stepForward = useCallback(() => {
-    if (!isActive || isTransitioningRef.current) return
+    if (isTransitioningRef.current) return
     setHasStarted(true)
 
     const nextP = currentPhaseRef.current + 1
@@ -525,11 +525,10 @@ export default function Slide11LiveJVMExecution({ isActive, onRegisterAnimation 
       resetSimulation()
       setCurrentPhase(0)
     }
-  }, [isActive, runTransitionTo, resetSimulation])
+  }, [runTransitionTo, resetSimulation])
 
   // Manual step backward (BACKSPACE)
   const stepBackward = useCallback(() => {
-    if (!isActive) return
     if (isTransitioningRef.current) {
       isTransitioningRef.current = false
       gsap.killTweensOf('*')
@@ -538,7 +537,7 @@ export default function Slide11LiveJVMExecution({ isActive, onRegisterAnimation 
     if (currentPhaseRef.current > 0) {
       applyPhaseInstant(currentPhaseRef.current - 1)
     }
-  }, [isActive, applyPhaseInstant])
+  }, [applyPhaseInstant])
 
   // Manual restart (R)
   const restart = useCallback(() => {

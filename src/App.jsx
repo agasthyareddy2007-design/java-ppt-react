@@ -41,21 +41,32 @@ export default function App() {
   }
 
   const [currentSlide, setCurrentSlide] = useState(getInitialSlide)
+  const currentSlideRef = useRef(currentSlide)
+  currentSlideRef.current = currentSlide
 
-  // Clear active animation controller on slide transition
-  useEffect(() => {
-    activeAnimationRef.current = null
-  }, [currentSlide])
+  // Map of slide index to animation controllers
+  const slideControllersRef = useRef({})
 
-  // Registration callback passed to active animated slides
-  const registerAnimation = useCallback((handlers) => {
-    activeAnimationRef.current = handlers
+  // Registration callback passed to animated slides
+  const registerAnimation = useCallback((slideIndex, handlers) => {
+    if (handlers) {
+      slideControllersRef.current[slideIndex] = handlers
+    } else {
+      delete slideControllersRef.current[slideIndex]
+    }
     return () => {
-      if (activeAnimationRef.current === handlers) {
-        activeAnimationRef.current = null
+      if (slideControllersRef.current[slideIndex] === handlers) {
+        delete slideControllersRef.current[slideIndex]
       }
     }
   }, [])
+
+  // Stable per-slide registration helpers
+  const regSlide6 = useCallback((handlers) => registerAnimation(5, handlers), [registerAnimation])
+  const regSlide9 = useCallback((handlers) => registerAnimation(8, handlers), [registerAnimation])
+  const regSlide11 = useCallback((handlers) => registerAnimation(10, handlers), [registerAnimation])
+  const regSlide13 = useCallback((handlers) => registerAnimation(12, handlers), [registerAnimation])
+  const regSlide14 = useCallback((handlers) => registerAnimation(13, handlers), [registerAnimation])
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -107,8 +118,13 @@ export default function App() {
       const isEditable = target && (target.isContentEditable || ['input', 'textarea', 'select'].includes(tagName))
       if (isEditable) return
 
+      const isEnter = e.key === 'Enter' || e.code === 'Enter' || e.keyCode === 13 || e.key === 'Return'
+      const isBackspace = e.key === 'Backspace' || e.code === 'Backspace' || e.keyCode === 8
+      const isR = e.key === 'r' || e.key === 'R' || e.code === 'KeyR'
+      const isP = e.key === 'p' || e.key === 'P' || e.code === 'KeyP'
+
       // 2. Prevent key repeat from skipping animation steps
-      if (e.repeat && ['Enter', 'Backspace', 'r', 'R', 'p', 'P'].includes(e.key)) {
+      if (e.repeat && (isEnter || isBackspace || isR || isP)) {
         e.preventDefault()
         return
       }
@@ -143,34 +159,38 @@ export default function App() {
       }
 
       // 4. Animation navigation — strictly separate keys
-      if (e.key === 'Enter') {
+      if (isEnter) {
         e.preventDefault()
-        if (activeAnimationRef.current && typeof activeAnimationRef.current.next === 'function') {
-          activeAnimationRef.current.next()
+        const anim = slideControllersRef.current[currentSlideRef.current]
+        if (anim && typeof anim.next === 'function') {
+          anim.next()
         }
         return
       }
 
-      if (e.key === 'Backspace') {
+      if (isBackspace) {
         e.preventDefault() // Prevents browser back navigation!
-        if (activeAnimationRef.current && typeof activeAnimationRef.current.prev === 'function') {
-          activeAnimationRef.current.prev()
+        const anim = slideControllersRef.current[currentSlideRef.current]
+        if (anim && typeof anim.prev === 'function') {
+          anim.prev()
         }
         return
       }
 
-      if (e.key === 'r' || e.key === 'R') {
+      if (isR) {
         e.preventDefault()
-        if (activeAnimationRef.current && typeof activeAnimationRef.current.restart === 'function') {
-          activeAnimationRef.current.restart()
+        const anim = slideControllersRef.current[currentSlideRef.current]
+        if (anim && typeof anim.restart === 'function') {
+          anim.restart()
         }
         return
       }
 
-      if (e.key === 'p' || e.key === 'P') {
+      if (isP) {
         e.preventDefault()
-        if (activeAnimationRef.current && typeof activeAnimationRef.current.togglePause === 'function') {
-          activeAnimationRef.current.togglePause()
+        const anim = slideControllersRef.current[currentSlideRef.current]
+        if (anim && typeof anim.togglePause === 'function') {
+          anim.togglePause()
         }
         return
       }
@@ -196,27 +216,27 @@ export default function App() {
         <Slide05Overview isActive={currentSlide === 4} />
         <Slide06ClassLoader
           isActive={currentSlide === 5}
-          onRegisterAnimation={currentSlide === 5 ? registerAnimation : undefined}
+          onRegisterAnimation={regSlide6}
         />
         <Slide07MemoryComponents isActive={currentSlide === 6} />
         <Slide08JITCompiler isActive={currentSlide === 7} />
         <Slide09GarbageCollection
           isActive={currentSlide === 8}
-          onRegisterAnimation={currentSlide === 8 ? registerAnimation : undefined}
+          onRegisterAnimation={regSlide9}
         />
         <Slide10PlatformIndependence isActive={currentSlide === 9} />
         <Slide11LiveJVMExecution
           isActive={currentSlide === 10}
-          onRegisterAnimation={currentSlide === 10 ? registerAnimation : undefined}
+          onRegisterAnimation={regSlide11}
         />
         <Slide12BTreesUnderstanding isActive={currentSlide === 11} />
         <Slide13BTreesInsertion
           isActive={currentSlide === 12}
-          onRegisterAnimation={currentSlide === 12 ? registerAnimation : undefined}
+          onRegisterAnimation={regSlide13}
         />
         <Slide14BTreesDeletion
           isActive={currentSlide === 13}
-          onRegisterAnimation={currentSlide === 13 ? registerAnimation : undefined}
+          onRegisterAnimation={regSlide14}
         />
         <Slide15ThankYou isActive={currentSlide === 14} />
       </div>
