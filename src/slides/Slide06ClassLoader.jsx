@@ -1,32 +1,12 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState } from 'react'
 import gsap from 'gsap'
-import AnimationKeyboardHint from '../components/AnimationKeyboardHint.jsx'
 
-export default function Slide06ClassLoader({ isActive, onRegisterAnimation }) {
+export default function Slide06ClassLoader({ isActive }) {
   const [activeLinkStep, setActiveLinkStep] = useState(0)
-  const [hasStarted, setHasStarted] = useState(false)
-
-  // Step forward (ENTER)
-  const stepForward = useCallback(() => {
-    setHasStarted(true)
-    setActiveLinkStep((prev) => (prev + 1) % 3)
-  }, [])
-
-  // Step backward (BACKSPACE)
-  const stepBackward = useCallback(() => {
-    setActiveLinkStep((prev) => (prev - 1 + 3) % 3)
-  }, [])
-
-  // Restart (R)
-  const restart = useCallback(() => {
-    setActiveLinkStep(0)
-    setHasStarted(false)
-  }, [])
 
   useEffect(() => {
     if (!isActive) {
       setActiveLinkStep(0)
-      setHasStarted(false)
       return
     }
 
@@ -35,23 +15,16 @@ export default function Slide06ClassLoader({ isActive, onRegisterAnimation }) {
     const t2 = gsap.delayedCall(0.3, () => pAnim('#p6-2'))
     const t3 = gsap.delayedCall(0.6, () => pAnim('#p6-3'))
 
+    const interval = setInterval(() => {
+      setActiveLinkStep((prev) => (prev + 1) % 3)
+    }, 1500)
+
     return () => {
       t2.kill(); t3.kill()
+      clearInterval(interval)
       gsap.killTweensOf('.packet')
     }
   }, [isActive])
-
-  // Register animation controls with App authoritative keyboard handler
-  useEffect(() => {
-    if (isActive && onRegisterAnimation) {
-      return onRegisterAnimation({
-        next: stepForward,
-        prev: stepBackward,
-        restart: restart,
-        togglePause: () => {}
-      })
-    }
-  }, [isActive, onRegisterAnimation, stepForward, stepBackward, restart])
 
   return (
     <section className={`slide ${isActive ? 'active' : ''}`}>
@@ -105,14 +78,6 @@ export default function Slide06ClassLoader({ isActive, onRegisterAnimation }) {
             </div>
           </div>
 
-        </div>
-
-        {/* ─── BOTTOM KEYBOARD HINT ─── */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-          <AnimationKeyboardHint
-            hasStarted={hasStarted}
-            customNote={hasStarted ? `Linking: ${['Verification', 'Preparation', 'Resolution'][activeLinkStep]}` : null}
-          />
         </div>
       </div>
     </section>

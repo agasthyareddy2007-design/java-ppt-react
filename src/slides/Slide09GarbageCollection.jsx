@@ -1,139 +1,37 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useEffect } from 'react'
 import gsap from 'gsap'
-import AnimationKeyboardHint from '../components/AnimationKeyboardHint.jsx'
 
-export default function Slide09GarbageCollection({ isActive, onRegisterAnimation }) {
-  const [currentPhase, setCurrentPhase] = useState(0)
-  const [hasStarted, setHasStarted] = useState(false)
-  const isTransitioningRef = useRef(false)
-  const currentPhaseRef = useRef(0)
-  currentPhaseRef.current = currentPhase
-
-  // Deterministic state apply (for instant backward stepping or resets)
-  const applyPhaseInstant = useCallback((phase) => {
-    gsap.killTweensOf(['#gc-scan-ring', '#gcn-c', '#gcn-e', '#gcn-f'])
-    isTransitioningRef.current = false
-
-    const scanner = document.getElementById('gc-scan-ring')
-    const c = document.getElementById('gcn-c')
-    const e = document.getElementById('gcn-e')
-    const f = document.getElementById('gcn-f')
-
-    if (!scanner || !c || !e || !f) return
-
-    gsap.set(c, { opacity: phase >= 1 ? 0.2 : 1, scale: phase >= 1 ? 0.7 : 1 })
-    gsap.set(e, { opacity: phase >= 2 ? 0.2 : 1, scale: phase >= 2 ? 0.7 : 1 })
-    gsap.set(f, { opacity: phase >= 3 ? 0.2 : 1, scale: phase >= 3 ? 0.7 : 1 })
-
-    if (phase === 0) {
-      gsap.set(scanner, { opacity: 0, x: 0, y: -50 })
-    } else if (phase === 1) {
-      gsap.set(scanner, { opacity: 1, x: 335, y: 135 })
-    } else if (phase === 2) {
-      gsap.set(scanner, { opacity: 1, x: 605, y: 105 })
-    } else if (phase === 3) {
-      gsap.set(scanner, { opacity: 1, x: 635, y: 305 })
-    } else if (phase >= 4) {
-      gsap.set(scanner, { opacity: 0, x: 635, y: 450 })
-    }
-
-    setCurrentPhase(phase)
-  }, [])
-
-  // Run smooth animated transition for forward step
-  const runTransitionTo = useCallback((targetPhase) => {
-    isTransitioningRef.current = true
-    const scanner = document.getElementById('gc-scan-ring')
-    if (!scanner) {
-      applyPhaseInstant(targetPhase)
-      return
-    }
-
-    const finish = () => {
-      isTransitioningRef.current = false
-      setCurrentPhase(targetPhase)
-    }
-
-    if (targetPhase === 1) {
-      // Step 1: Scanner enters and sweeps to C
-      gsap.set(scanner, { opacity: 0, x: 0, y: -50 })
-      gsap.timeline({ onComplete: finish })
-        .to(scanner, { opacity: 1, duration: 0.4 })
-        .to(scanner, { x: 335, y: 135, duration: 1.2, ease: "power1.inOut" })
-        .to('#gcn-c', { opacity: 0.2, scale: 0.7, duration: 0.4 }, "-=0.3")
-    } else if (targetPhase === 2) {
-      // Step 2: Scanner sweeps to E
-      gsap.timeline({ onComplete: finish })
-        .to(scanner, { x: 605, y: 105, duration: 1.2, ease: "power1.inOut" })
-        .to('#gcn-e', { opacity: 0.2, scale: 0.7, duration: 0.4 }, "-=0.3")
-    } else if (targetPhase === 3) {
-      // Step 3: Scanner sweeps to F
-      gsap.timeline({ onComplete: finish })
-        .to(scanner, { x: 635, y: 305, duration: 1.0, ease: "power1.inOut" })
-        .to('#gcn-f', { opacity: 0.2, scale: 0.7, duration: 0.4 }, "-=0.3")
-    } else if (targetPhase === 4) {
-      // Step 4: Sweep completes and scanner exits
-      gsap.timeline({ onComplete: finish })
-        .to(scanner, { y: 450, opacity: 0, duration: 1.2, ease: "power1.in" })
-    } else {
-      finish()
-    }
-  }, [applyPhaseInstant])
-
-  // Step forward (ENTER)
-  const stepForward = useCallback(() => {
-    if (!isActive || isTransitioningRef.current) return
-    setHasStarted(true)
-
-    const nextP = currentPhaseRef.current + 1
-    if (nextP <= 4) {
-      runTransitionTo(nextP)
-    } else {
-      // Loop or restart on additional Enter at end
-      applyPhaseInstant(0)
-    }
-  }, [isActive, runTransitionTo, applyPhaseInstant])
-
-  // Step backward (BACKSPACE)
-  const stepBackward = useCallback(() => {
-    if (!isActive) return
-    if (currentPhaseRef.current > 0) {
-      applyPhaseInstant(currentPhaseRef.current - 1)
-    }
-  }, [isActive, applyPhaseInstant])
-
-  // Restart (R)
-  const restart = useCallback(() => {
-    applyPhaseInstant(0)
-    setHasStarted(false)
-  }, [applyPhaseInstant])
-
-  // Slide mount / unmount
+export default function Slide09GarbageCollection({ isActive }) {
   useEffect(() => {
     if (!isActive) {
-      applyPhaseInstant(0)
-      setHasStarted(false)
+      gsap.killTweensOf(['#gc-scan-ring', '#gcn-c', '#gcn-e', '#gcn-f'])
+      gsap.set(['#gcn-c', '#gcn-e', '#gcn-f'], { opacity: 1, scale: 1 })
+      gsap.set('#gc-scan-ring', { opacity: 0, x: 0, y: -50 })
       return
     }
-    applyPhaseInstant(0)
-    setHasStarted(false)
+
+    const scanner = document.getElementById('gc-scan-ring')
+    if (!scanner) return
+
+    const tlgc = gsap.timeline({ repeat: -1, repeatDelay: 3.5 })
+    tlgc.set(['#gcn-c', '#gcn-e', '#gcn-f'], { opacity: 1, scale: 1 })
+      .set('#gc-scan-ring', { opacity: 0, x: 0, y: -50 })
+      .to('#gc-scan-ring', { opacity: 1, duration: 0.5 }, 1.0)
+      .to('#gc-scan-ring', { x: 335, y: 135, duration: 1.5, ease: 'power1.inOut' }, 1.5)
+      .to('#gcn-c', { opacity: 0.2, scale: 0.7, duration: 0.5 }, 3.0)
+      .to('#gc-scan-ring', { x: 605, y: 105, duration: 1.5, ease: 'power1.inOut' }, 4.0)
+      .to('#gcn-e', { opacity: 0.2, scale: 0.7, duration: 0.5 }, 5.5)
+      .to('#gc-scan-ring', { x: 635, y: 305, duration: 1.0, ease: 'power1.inOut' }, 6.5)
+      .to('#gcn-f', { opacity: 0.2, scale: 0.7, duration: 0.5 }, 7.5)
+      .to('#gc-scan-ring', { y: 450, opacity: 0, duration: 1.5, ease: 'power1.in' }, 8.5)
 
     return () => {
+      tlgc.kill()
       gsap.killTweensOf(['#gc-scan-ring', '#gcn-c', '#gcn-e', '#gcn-f'])
+      gsap.set(['#gcn-c', '#gcn-e', '#gcn-f'], { opacity: 1, scale: 1 })
+      gsap.set('#gc-scan-ring', { opacity: 0, x: 0, y: -50 })
     }
-  }, [isActive, applyPhaseInstant])
-
-  // Register animation controls with App authoritative keyboard handler
-  useEffect(() => {
-    if (isActive && onRegisterAnimation) {
-      return onRegisterAnimation({
-        next: stepForward,
-        prev: stepBackward,
-        restart: restart,
-        togglePause: () => {}
-      })
-    }
-  }, [isActive, onRegisterAnimation, stepForward, stepBackward, restart])
+  }, [isActive])
 
   return (
     <section className={`slide ${isActive ? 'active' : ''}`}>
@@ -188,20 +86,6 @@ export default function Slide09GarbageCollection({ isActive, onRegisterAnimation
             </div>
           </div>
 
-        </div>
-
-        {/* ─── BOTTOM KEYBOARD HINT ─── */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-          <AnimationKeyboardHint
-            hasStarted={hasStarted}
-            customNote={hasStarted ? [
-              'Ready',
-              'Scanning: Node C (Unreachable)',
-              'Scanning: Node E (Unreachable)',
-              'Scanning: Node F (Unreachable)',
-              'Reclaimed: Unreachable Memory Swept'
-            ][currentPhase] : null}
-          />
         </div>
       </div>
     </section>

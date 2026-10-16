@@ -61,9 +61,7 @@ export default function App() {
     }
   }, [])
 
-  // Stable per-slide registration helpers
-  const regSlide6 = useCallback((handlers) => registerAnimation(5, handlers), [registerAnimation])
-  const regSlide9 = useCallback((handlers) => registerAnimation(8, handlers), [registerAnimation])
+  // Stable per-slide registration helpers for manual slides (11, 13, 14)
   const regSlide11 = useCallback((handlers) => registerAnimation(10, handlers), [registerAnimation])
   const regSlide13 = useCallback((handlers) => registerAnimation(12, handlers), [registerAnimation])
   const regSlide14 = useCallback((handlers) => registerAnimation(13, handlers), [registerAnimation])
@@ -214,16 +212,10 @@ export default function App() {
         <Slide03HowJavaRuns isActive={currentSlide === 2} />
         <Slide04Architecture isActive={currentSlide === 3} />
         <Slide05Overview isActive={currentSlide === 4} />
-        <Slide06ClassLoader
-          isActive={currentSlide === 5}
-          onRegisterAnimation={regSlide6}
-        />
+        <Slide06ClassLoader isActive={currentSlide === 5} />
         <Slide07MemoryComponents isActive={currentSlide === 6} />
         <Slide08JITCompiler isActive={currentSlide === 7} />
-        <Slide09GarbageCollection
-          isActive={currentSlide === 8}
-          onRegisterAnimation={regSlide9}
-        />
+        <Slide09GarbageCollection isActive={currentSlide === 8} />
         <Slide10PlatformIndependence isActive={currentSlide === 9} />
         <Slide11LiveJVMExecution
           isActive={currentSlide === 10}
